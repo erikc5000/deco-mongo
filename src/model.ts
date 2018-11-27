@@ -52,7 +52,7 @@ export class Model<TInterface, TDocument extends object> {
             collection = await db.createCollection(name, createOptions);
         }
 
-        if (indexSpecs) {
+        if (indexSpecs && indexSpecs.length > 0) {
             try {
                 await collection.createIndexes(indexSpecs);
             } catch (err) {
@@ -67,8 +67,12 @@ export class Model<TInterface, TDocument extends object> {
         return new Model<TInterface, TDocument>(collection);
     }
 
-    async insertOne(obj: TInterface) {
-        return await this.collection.insertOne(obj);
+    async insertMany(objs: TInterface[], options?: mongo.CollectionInsertManyOptions) {
+        return await this.collection.insertMany(objs, options);
+    }
+
+    async insertOne(obj: TInterface, options?: mongo.CollectionInsertOneOptions) {
+        return await this.collection.insertOne(obj, options);
     }
 }
 
