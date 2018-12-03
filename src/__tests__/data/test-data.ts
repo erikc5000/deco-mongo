@@ -1,14 +1,14 @@
-import { Collection, Indexes } from '../../decorators';
-import { Property } from '../../decorators/property-decorator';
-import { PropertyConverter } from '../../interfaces';
+import { Collection, Indexes } from '../../decorators'
+import { Property } from '../../decorators/property-decorator'
+import { PropertyConverter } from '../../interfaces'
 
 export interface Cat {
-    name?: string;
+    name?: string
 }
 
 @Collection('cats')
 export class CatDocument implements Cat {
-    name?: string;
+    name?: string
 }
 
 export const catSchema = {
@@ -16,34 +16,34 @@ export const catSchema = {
     additionalProperties: false,
     properties: {
         name: {
-            bsonType: 'string',
-        },
-    },
-};
+            bsonType: 'string'
+        }
+    }
+}
 
 @Collection('schemaCats', { jsonSchema: catSchema })
 export class SchemaCatDocument implements Cat {
-    name?: string;
+    name?: string
 }
 
 export interface Dog {
-    breed?: string;
+    breed?: string
 }
 
 @Collection('dogs')
 @Indexes([{ key: { breed: 1 } }])
 export class DogDocument implements Dog {
-    breed?: string;
+    breed?: string
 }
 
 @Collection('dogs')
 @Indexes([])
 export class NonIndexedDogDocument implements Dog {
-    breed?: string;
+    breed?: string
 }
 
 export interface Bird {
-    color?: string;
+    color?: string
 }
 
 @Collection('birds')
@@ -52,8 +52,8 @@ export class BirdDocument implements Bird {
         name: 'mappedColor',
         converter: {
             toDb: (value: any) => 'mapped ' + value,
-            fromDb: (value: string) => value.replace('mapped ', ''),
-        },
+            fromDb: (value: string) => value.replace('mapped ', '')
+        }
     })
-    color?: string;
+    color?: string
 }

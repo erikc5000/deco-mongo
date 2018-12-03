@@ -1,5 +1,5 @@
-import { PropertyConverter, ClassType } from './interfaces';
-import { Int32, Double, ObjectID, Binary } from 'bson';
+import { PropertyConverter, ClassType } from './interfaces'
+import { Int32, Double, ObjectID, Binary } from 'bson'
 
 /**
  * Convert properties of a sub-document individually using a class derived from its interface
@@ -8,10 +8,10 @@ import { Int32, Double, ObjectID, Binary } from 'bson';
 export function nestedPropertyConverter<T>(c: ClassType<T>) {
     const propertyConverter: PropertyConverter = {
         toDb: (value: any) => value,
-        fromDb: (value: any) => value,
-    };
+        fromDb: (value: any) => value
+    }
 
-    return propertyConverter;
+    return propertyConverter
 }
 
 /**
@@ -19,33 +19,33 @@ export function nestedPropertyConverter<T>(c: ClassType<T>) {
  */
 export const objectIdConverter: PropertyConverter = {
     toDb: (value: string | number) => new ObjectID(value),
-    fromDb: (value: ObjectID) => value.toHexString(),
-};
+    fromDb: (value: ObjectID) => value.toHexString()
+}
 
 /**
  * Convert a valid UUID in string form to a BSON Binary
  */
 export const uuidConverter: PropertyConverter = {
     toDb(value: any) {
-        let buffer: Buffer;
+        let buffer: Buffer
 
         if (typeof value === 'string') {
-            const normalized = value.replace(/-/g, '').toLowerCase();
-            buffer = Buffer.from(normalized, 'hex');
+            const normalized = value.replace(/-/g, '').toLowerCase()
+            buffer = Buffer.from(normalized, 'hex')
         } else if (value instanceof Buffer) {
-            buffer = value;
+            buffer = value
         } else {
-            throw new Error('Expected a string or Buffer');
+            throw new Error('Expected a string or Buffer')
         }
 
-        return new Binary(buffer, Binary.SUBTYPE_UUID);
+        return new Binary(buffer, Binary.SUBTYPE_UUID)
     },
     fromDb(value: any, targetType?: any) {
-        if (!(value instanceof Binary)) throw new Error(`Expected a Binary object`);
+        if (!(value instanceof Binary)) throw new Error(`Expected a Binary object`)
         else if (value.sub_type !== Binary.SUBTYPE_UUID)
-            throw new Error(`Binary doesn't have UUID subtype`);
+            throw new Error(`Binary doesn't have UUID subtype`)
 
-        const buffer = value.buffer;
+        const buffer = value.buffer
 
         if (targetType === String) {
             return (
@@ -58,31 +58,31 @@ export const uuidConverter: PropertyConverter = {
                 buffer.toString('hex', 8, 10) +
                 '-' +
                 buffer.toString('hex', 10, 16)
-            );
+            )
         } else if (targetType === Object) {
-            return buffer;
+            return buffer
         } else {
-            throw new Error(`Conversion to type '${targetType}' is unsupported`);
+            throw new Error(`Conversion to type '${targetType}' is unsupported`)
         }
-    },
-};
+    }
+}
 
 export const int32Converter: PropertyConverter = {
     toDb: (value: number) => new Int32(value),
-    fromDb: (value: Int32) => value.valueOf(),
-};
+    fromDb: (value: Int32) => value.valueOf()
+}
 
 export const doubleConverter: PropertyConverter = {
     toDb: (value: number) => new Double(value),
-    fromDb: (value: Double) => value.valueOf(),
-};
-
-interface GeoJsonLocation {
-    coordinates: [number, number];
-    type: string;
+    fromDb: (value: Double) => value.valueOf()
 }
 
-type Coordinates = [number, number];
+interface GeoJsonLocation {
+    coordinates: [number, number]
+    type: string
+}
+
+type Coordinates = [number, number]
 
 export const geoJsonConverter: PropertyConverter = {
     toDb: (value: Coordinates): GeoJsonLocation => {
@@ -92,13 +92,13 @@ export const geoJsonConverter: PropertyConverter = {
             typeof value[0] !== 'number' ||
             typeof value[1] !== 'number'
         ) {
-            throw new Error(`Expected an array containing '[latitude, longitude]'`);
+            throw new Error(`Expected an array containing '[latitude, longitude]'`)
         }
 
         return {
             coordinates: [value[1], value[0]],
-            type: 'Point',
-        };
+            type: 'Point'
+        }
     },
-    fromDb: (value: GeoJsonLocation) => [value.coordinates[1], value.coordinates[0]],
-};
+    fromDb: (value: GeoJsonLocation) => [value.coordinates[1], value.coordinates[0]]
+}

@@ -1,18 +1,18 @@
-import * as mongo from 'mongodb';
-import { collectionExists } from './mongo-util';
-import { getCollectionMetadata } from './metadata/collection-metadata';
-import { getIndexesMetadata } from './metadata/indexes-metadata';
-import { ClassType } from './interfaces';
-import { mapObjectToDatabase } from './mapper';
+import * as mongo from 'mongodb'
+import { collectionExists } from './mongo-util'
+import { getCollectionMetadata } from './metadata/collection-metadata'
+import { getIndexesMetadata } from './metadata/indexes-metadata'
+import { ClassType } from './interfaces'
+import { mapObjectToDatabase } from './mapper'
 
 function processJsonSchemaOption(jsonSchemaOption?: boolean | object) {
     if (typeof jsonSchemaOption === 'boolean' && jsonSchemaOption) {
         // generateJsonSchema()
     } else if (typeof jsonSchemaOption === 'object') {
-        return jsonSchemaOption;
+        return jsonSchemaOption
     }
 
-    return undefined;
+    return undefined
 }
 
 export class Model<TInterface, TDocument extends object> {
@@ -25,41 +25,41 @@ export class Model<TInterface, TDocument extends object> {
         classType: ClassType<TDocument>,
         db: mongo.Db
     ) {
-        const { name, options } = getCollectionMetadata(classType);
-        const indexSpecs = getIndexesMetadata(classType);
+        const { name, options } = getCollectionMetadata(classType)
+        const indexSpecs = getIndexesMetadata(classType)
 
-        let createOptions: mongo.CollectionCreateOptions = {};
-        let jsonSchema: object | undefined;
+        let createOptions: mongo.CollectionCreateOptions = {}
+        let jsonSchema: object | undefined
 
         if (options) {
-            if (options.mongoCreateOptions) createOptions = options.mongoCreateOptions;
+            if (options.mongoCreateOptions) createOptions = options.mongoCreateOptions
 
-            jsonSchema = processJsonSchemaOption(options.jsonSchema);
+            jsonSchema = processJsonSchemaOption(options.jsonSchema)
         }
 
-        if (jsonSchema) createOptions.validator = { $jsonSchema: jsonSchema };
+        if (jsonSchema) createOptions.validator = { $jsonSchema: jsonSchema }
 
-        let collection: mongo.Collection;
-        const collExists = await collectionExists(name, db);
+        let collection: mongo.Collection
+        const collExists = await collectionExists(name, db)
 
         if (collExists) {
-            collection = db.collection(name);
+            collection = db.collection(name)
 
             if (jsonSchema) {
                 await db.command({
                     collMod: 'gyms',
-                    validator: createOptions.validator,
-                });
+                    validator: createOptions.validator
+                })
             } else {
-                await db.command({ collMod: 'gyms', validator: {} });
+                await db.command({ collMod: 'gyms', validator: {} })
             }
         } else {
-            collection = await db.createCollection(name, createOptions);
+            collection = await db.createCollection(name, createOptions)
         }
 
         if (indexSpecs && indexSpecs.length > 0) {
             try {
-                await collection.createIndexes(indexSpecs);
+                await collection.createIndexes(indexSpecs)
             } catch (err) {
                 // IndexOptionsConflict
                 if (err instanceof mongo.MongoError && err.code === 85) {
@@ -69,15 +69,15 @@ export class Model<TInterface, TDocument extends object> {
             }
         }
 
-        return new Model<TInterface, TDocument>(classType, collection);
+        return new Model<TInterface, TDocument>(classType, collection)
     }
 
     async insertMany(objs: TInterface[], options?: mongo.CollectionInsertManyOptions) {
-        return await this.collection.insertMany(objs, options);
+        return await this.collection.insertMany(objs, options)
     }
 
     async insertOne(obj: TInterface, options?: mongo.CollectionInsertOneOptions) {
-        const mappedObject = mapObjectToDatabase(obj, this.classType);
-        return await this.collection.insertOne(mappedObject, options);
+        const mappedObject = mapObjectToDatabase(obj, this.classType)
+        return await this.collection.insertOne(mappedObject, options)
     }
 }

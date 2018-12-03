@@ -1,49 +1,49 @@
-import { ClassType } from './interfaces';
-import { getPropertyMetadata } from './metadata/property-metadata';
+import { ClassType } from './interfaces'
+import { getPropertyMetadata } from './metadata/property-metadata'
 
 export function mapObjectToDatabase<TInterface, TDocument extends object>(
     obj: TInterface,
     classType: ClassType<TDocument>
 ) {
-    const mappedObject: any = {};
+    const mappedObject: any = {}
 
     // tslint:disable-next-line:forin
     for (const key in obj) {
         // const type = Reflect.getMetadata('design:type', classType, key);
-        const propertyOptions = getPropertyMetadata(classType, key);
+        const propertyOptions = getPropertyMetadata(classType, key)
 
-        let mappedKey: string = key;
-        let value: any = obj[key];
+        let mappedKey: string = key
+        let value: any = obj[key]
 
         if (propertyOptions) {
-            if (propertyOptions.name) mappedKey = propertyOptions.name;
-            if (propertyOptions.converter) value = propertyOptions.converter.toDb(value);
+            if (propertyOptions.name) mappedKey = propertyOptions.name
+            if (propertyOptions.converter) value = propertyOptions.converter.toDb(value)
         }
 
         if (mappedKey in mappedObject) {
             throw new Error(
                 `Detected multiple properties mapped to the name '${mappedKey}' ` +
                     `on ${classType}.  Check @Property() definitions.`
-            );
+            )
         } else {
-            mappedObject[mappedKey] = value;
+            mappedObject[mappedKey] = value
         }
     }
 
-    return mappedObject;
+    return mappedObject
 }
 
 export function mapObjectsToDatabase<TInterface, TDocument extends object>(
     objects: TInterface[],
     classType: ClassType<TDocument>
 ) {
-    const mappedObjects = [];
+    const mappedObjects = []
 
     for (const obj of objects) {
-        mappedObjects.push(mapObjectToDatabase(obj, classType));
+        mappedObjects.push(mapObjectToDatabase(obj, classType))
     }
 
-    return mappedObjects;
+    return mappedObjects
 }
 
 // export function mapObjectFromDatabase<TDatabase, TDocument extends object>(
