@@ -3,6 +3,7 @@ import { collectionExists } from './mongo-util';
 import { getCollectionMetadata } from './metadata/collection-metadata';
 import { getIndexesMetadata } from './metadata/indexes-metadata';
 import { ClassType } from './interfaces';
+import { mapObjectToDatabase } from './mapper';
 
 function processJsonSchemaOption(jsonSchemaOption?: boolean | object) {
     if (typeof jsonSchemaOption === 'boolean' && jsonSchemaOption) {
@@ -15,27 +16,28 @@ function processJsonSchemaOption(jsonSchemaOption?: boolean | object) {
 }
 
 export class Model<TInterface, TDocument extends object> {
-    constructor(private readonly collection: mongo.Collection) { }
+    constructor(
+        private readonly classType: ClassType<TDocument>,
+        private readonly collection: mongo.Collection
+    ) {}
 
     static async create<TInterface, TDocument extends object>(
-        c: ClassType<TDocument>,
-        db: mongo.Db,
+        classType: ClassType<TDocument>,
+        db: mongo.Db
     ) {
-        const { name, options } = getCollectionMetadata(c);
-        const indexSpecs = getIndexesMetadata(c);
+        const { name, options } = getCollectionMetadata(classType);
+        const indexSpecs = getIndexesMetadata(classType);
 
         let createOptions: mongo.CollectionCreateOptions = {};
         let jsonSchema: object | undefined;
 
         if (options) {
-            if (options.mongoCreateOptions)
-                createOptions = options.mongoCreateOptions;
+            if (options.mongoCreateOptions) createOptions = options.mongoCreateOptions;
 
             jsonSchema = processJsonSchemaOption(options.jsonSchema);
         }
 
-        if (jsonSchema)
-            createOptions.validator = { $jsonSchema: jsonSchema };
+        if (jsonSchema) createOptions.validator = { $jsonSchema: jsonSchema };
 
         let collection: mongo.Collection;
         const collExists = await collectionExists(name, db);
@@ -44,7 +46,10 @@ export class Model<TInterface, TDocument extends object> {
             collection = db.collection(name);
 
             if (jsonSchema) {
-                await db.command({ collMod: 'gyms', validator: createOptions.validator });
+                await db.command({
+                    collMod: 'gyms',
+                    validator: createOptions.validator,
+                });
             } else {
                 await db.command({ collMod: 'gyms', validator: {} });
             }
@@ -64,7 +69,7 @@ export class Model<TInterface, TDocument extends object> {
             }
         }
 
-        return new Model<TInterface, TDocument>(collection);
+        return new Model<TInterface, TDocument>(classType, collection);
     }
 
     async insertMany(objs: TInterface[], options?: mongo.CollectionInsertManyOptions) {
@@ -72,8 +77,7 @@ export class Model<TInterface, TDocument extends object> {
     }
 
     async insertOne(obj: TInterface, options?: mongo.CollectionInsertOneOptions) {
-        return await this.collection.insertOne(obj, options);
+        const mappedObject = mapObjectToDatabase(obj, this.classType);
+        return await this.collection.insertOne(mappedObject, options);
     }
 }
-
-// const gymModel = await Model.create(GymDocumentNew, db);

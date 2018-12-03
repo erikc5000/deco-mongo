@@ -1,4 +1,6 @@
 import { Collection, Indexes } from '../../decorators';
+import { Property } from '../../decorators/property-decorator';
+import { PropertyConverter } from '../../interfaces';
 
 export interface Cat {
     name?: string;
@@ -38,4 +40,20 @@ export class DogDocument implements Dog {
 @Indexes([])
 export class NonIndexedDogDocument implements Dog {
     breed?: string;
+}
+
+export interface Bird {
+    color?: string;
+}
+
+@Collection('birds')
+export class BirdDocument implements Bird {
+    @Property({
+        name: 'mappedColor',
+        converter: {
+            toDb: (value: any) => 'mapped ' + value,
+            fromDb: (value: string) => value.replace('mapped ', ''),
+        },
+    })
+    color?: string;
 }

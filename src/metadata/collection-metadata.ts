@@ -1,6 +1,6 @@
 import { CollectionOptions, ClassType } from '../interfaces';
 
-export const COLLECTION_KEY = Symbol('collection');
+export const COLLECTION_KEY = Symbol('decoMongo:collection');
 
 export interface CollectionMetadata {
     name: string;

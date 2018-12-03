@@ -2,7 +2,8 @@
     "name": "deco-mongo",
     "version": "1.0.0",
     "description": "A modern and lightweight Mongo ODM library written in Typescript",
-    "main": "index.js",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
     "scripts": {
         "build": "tsc",
         "test": "jest"
@@ -15,22 +16,26 @@
     "author": "Erik Christensen",
     "license": "MIT",
     "devDependencies": {
-        "@types/jest": "^23.3.9",
-        "@types/mongodb": "^3.1.14",
-        "@types/node": "^10.12.10",
+        "@types/jest": "^23.3.10",
+        "@types/mongodb": "^3.1.15",
+        "@types/mongodb-memory-server": "^1.8.0",
+        "@types/node": "^10.12.11",
         "jest": "^23.6.0",
         "mongodb-memory-server": "^2.7.3",
         "nodemon": "^1.18.7",
+        "prettier": "^1.15.3",
         "ts-jest": "^23.10.5",
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
-        "typescript": "^3.1.6"
+        "typescript": "^3.2.1"
     },
     "dependencies": {
         "mongodb": "^3.1.10",
         "reflect-metadata": "^0.1.12"
     },
     "jest": {
-        "modulePathIgnorePatterns": ["data/*"]
+        "modulePathIgnorePatterns": [
+            "data/*"
+        ]
     }
 }
