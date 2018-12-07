@@ -1,6 +1,5 @@
 import { Collection, Indexes } from '../../decorators'
 import { Property } from '../../decorators/property-decorator'
-import { PropertyConverter } from '../../interfaces'
 
 export interface Cat {
     name?: string
@@ -31,13 +30,13 @@ export interface Dog {
 }
 
 @Collection('dogs')
-@Indexes([{ key: { breed: 1 } }])
+@Indexes({ key: { breed: 1 } })
 export class DogDocument implements Dog {
     breed?: string
 }
 
 @Collection('dogs')
-@Indexes([])
+@Indexes()
 export class NonIndexedDogDocument implements Dog {
     breed?: string
 }

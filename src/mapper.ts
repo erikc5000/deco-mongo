@@ -1,7 +1,79 @@
 import { ClassType } from './interfaces'
-import { getPropertyMetadata } from './metadata/property-metadata'
+import { getPropertyMetadata, getClassPropertiesMetadata } from './metadata/property-metadata'
+
+export class Mapper<TInterface, TDocument extends object> {
+    constructor(private readonly obj: any, private readonly classType: ClassType<TDocument>) {}
+
+    withCreationTimestamps() {
+        const creationTime = Date.now()
+        // this.obj.
+        return this
+    }
+
+    withUpdateTimestamps() {
+        const updateTime = Date.now()
+
+        return this
+    }
+
+    get toDb(): any {
+        if (this.obj instanceof Array) {
+            return mapObjectsToDatabase(this.obj, this.classType)
+        } else if (typeof this.obj === 'object') {
+            return mapObjectToDatabase(this.obj, this.classType)
+        } else {
+            throw new Error(`Mapping unexpected type '${typeof this.obj}'`)
+        }
+    }
+
+    get fromDb(): Partial<TInterface> | Partial<TInterface>[] {
+        if (this.obj instanceof Array) {
+            return mapObjectsFromDatabase(this.obj, this.classType)
+        } else if (typeof this.obj === 'object') {
+            return mapObjectFromDatabase(this.obj, this.classType)
+        } else {
+            throw new Error(`Mapping unexpected type '${typeof this.obj}'`)
+        }
+    }
+}
+
+export class MultiMapper<TInterface, TDocument extends object> {
+
+}
 
 export function mapObjectToDatabase<TInterface, TDocument extends object>(
+    obj: TInterface,
+    classType: ClassType<TDocument>
+) {
+    const mappedObject: any = {}
+
+    // tslint:disable-next-line:forin
+    for (const key in obj) {
+        // const type = Reflect.getMetadata('design:type', classType, key);
+        const propertyOptions = getPropertyMetadata(classType, key)
+
+        let mappedKey: string = key
+        let value: any = obj[key]
+
+        if (propertyOptions) {
+            if (propertyOptions.name) mappedKey = propertyOptions.name
+            if (propertyOptions.converter) value = propertyOptions.converter.toDb(value)
+        }
+
+        if (mappedKey in mappedObject) {
+            throw new Error(
+                `Detected multiple properties mapped to the name '${mappedKey}' ` +
+                    `on ${classType}.  Check @Property() definitions.`
+            )
+        } else {
+            mappedObject[mappedKey] = value
+        }
+    }
+
+    return mappedObject
+}
+
+export function mapPartialObjectToDatabase<TInterface, TDocument extends object>(
     obj: TInterface,
     classType: ClassType<TDocument>
 ) {
@@ -46,35 +118,51 @@ export function mapObjectsToDatabase<TInterface, TDocument extends object>(
     return mappedObjects
 }
 
-// export function mapObjectFromDatabase<TDatabase, TDocument extends object>(
-//     obj: TDatabase,
-//     classType: ClassType<TDocument>,
-// ) {
-//     const mappedObject = new Partial<TDocument>();
+export function mapObjectFromDatabase<TInterface, TDocument extends object>(
+    mappedObject: any,
+    classType: ClassType<TDocument>
+): Partial<TInterface> {
+    const classPropertiesMetadata = getClassPropertiesMetadata(classType)
 
-//     // tslint:disable-next-line:forin
-//     for (const key in obj) {
-//         // const type = Reflect.getMetadata('design:type', classType, key);
-//         const propertyOptions = getPropertyMetadata(classType, key);
+    if (!classPropertiesMetadata) {
+        throw new Error('No properties defined')
+    }
 
-//         let mappedKey: string = key;
-//         let value: any = obj[key];
+    const obj: any = {}
 
-//         if (propertyOptions) {
-//             if (propertyOptions.name)
-//                 mappedKey = propertyOptions.name;
+    // tslint:disable-next-line:forin
+    for (const mappedKey in mappedObject) {
+        const key = classPropertiesMetadata.getKeyFromMappedKey(mappedKey) || mappedKey
 
-//             if (propertyOptions.converter)
-//                 value = propertyOptions.converter.toDb(value);
-//         }
+        if (key in obj) {
+            throw new Error(
+                `Detected multiple properties mapped to the name '${String(key)}' ` +
+                    `on ${classType}.  Check @Property() definitions.`
+            )
+        }
 
-//         if (mappedKey in mappedObject) {
-//             throw new Error(`Detected multiple properties mapped to the name '${mappedKey}' ` +
-//                 `on ${classType}.  Check @Property() definitions.`);
-//         } else {
-//             mappedObject[mappedKey] = value;
-//         }
-//     }
+        const propertyOptions = getPropertyMetadata(classType, key)
 
-//     return mappedObject;
-// }
+        let value: any = mappedObject[mappedKey]
+
+        if (propertyOptions && propertyOptions.converter)
+            value = propertyOptions.converter.fromDb(value)
+
+        obj[key] = value
+    }
+
+    return obj as Partial<TInterface>
+}
+
+export function mapObjectsFromDatabase<TInterface, TDocument extends object>(
+    objects: any[],
+    classType: ClassType<TDocument>
+) {
+    const mappedObjects: Partial<TInterface>[] = []
+
+    for (const obj of objects) {
+        mappedObjects.push(mapObjectFromDatabase(obj, classType))
+    }
+
+    return mappedObjects
+}
