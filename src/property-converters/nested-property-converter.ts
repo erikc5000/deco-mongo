@@ -13,7 +13,9 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
     }
 
     toDb(value: any) {
-        if (typeof value !== 'object') {
+        if (value == null) {
+            return value
+        } else if (typeof value !== 'object') {
             throw new Error('Expected an object')
         }
 
@@ -21,7 +23,9 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
     }
 
     fromDb(value: any) {
-        if (typeof value !== 'object') {
+        if (value == null) {
+            return value
+        } else if (typeof value !== 'object') {
             throw new Error('Expected an object')
         }
 

@@ -1,12 +1,30 @@
 import { PropertyConverter } from '../interfaces'
 import { Double } from 'bson'
 
+function isDouble(value: any): value is Double {
+    return typeof value === 'object' && typeof value.valueOf === 'function'
+}
+
 export class DoubleConverter implements PropertyConverter {
-    toDb(value: number) {
-        return new Double(value)
+    toDb(value: any) {
+        if (value == null) {
+            return value
+        } else if (typeof value === 'number') {
+            return new Double(value)
+        } else if (typeof value === 'string') {
+            return new Double(parseInt(value, 10))
+        } else {
+            throw new Error('Expected a number or string')
+        }
     }
 
-    fromDb(value: Double) {
-        return value.valueOf()
+    fromDb(value: any) {
+        if (value == null) {
+            return value
+        } else if (isDouble(value)) {
+            return value.valueOf()
+        } else {
+            throw new Error('Expected a Double object')
+        }
     }
 }

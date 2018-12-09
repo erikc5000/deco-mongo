@@ -38,22 +38,28 @@ export class GeoJsonConverter implements PropertyConverter {
         private readonly options: GeoJsonConverterOptions = { coordType: CoordinateType.LatLong }
     ) {}
 
-    toDb(value: any): GeoJsonLocation {
-        if (!isCoordinates(value)) {
+    toDb(value: any) {
+        if (value == null) {
+            return value
+        } else if (!isCoordinates(value)) {
             throw new Error(`Expected an array containing '[number, number]'`)
         }
 
-        return {
+        const location: GeoJsonLocation = {
             coordinates:
                 this.options.coordType === CoordinateType.LatLong
                     ? [value[1], value[0]]
                     : [value[0], value[1]],
             type: 'Point'
         }
+
+        return location
     }
 
     fromDb(value: any): Coordinates {
-        if (!isGeoJsonLocation(value)) {
+        if (value == null) {
+            return value
+        } else if (!isGeoJsonLocation(value)) {
             throw new Error('Expected a valid GeoJSON location')
         }
 
