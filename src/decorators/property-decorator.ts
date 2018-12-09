@@ -14,6 +14,10 @@ export function Property(options: PropertyOptions = {}) {
 
         classProperties.mapKey(propertyKey, options.name || propertyKey)
 
+        if (options.timestamp) {
+            classProperties.addTimestampKey(propertyKey, options.timestamp)
+        }
+
         Reflect.defineMetadata(CLASS_PROPERTIES_KEY, classProperties, target.constructor)
         Reflect.defineMetadata(PROPERTY_KEY, options, target.constructor, propertyKey)
     }

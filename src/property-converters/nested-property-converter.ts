@@ -1,22 +1,30 @@
 import { PropertyConverter, ClassType } from '../interfaces'
-import { mapObjectToDatabase } from '../mapper'
+import { Mapper } from '../mapper'
 
 /**
  * Convert properties of a sub-document individually using a class derived from its interface
  * @param c The class to be used for conversion
  */
 export class NestedPropertyConverter<T extends object> implements PropertyConverter {
-    constructor(private readonly classType: ClassType<T>) {}
+    private readonly mapper: Mapper<any, T>
+
+    constructor(private readonly classType: ClassType<T>) {
+        this.mapper = new Mapper(classType)
+    }
 
     toDb(value: any) {
         if (typeof value !== 'object') {
             throw new Error('Expected an object')
         }
 
-        return mapObjectToDatabase(value, this.classType)
+        return this.mapper.mapObjectToDb(value)
     }
 
     fromDb(value: any) {
-        return value
+        if (typeof value !== 'object') {
+            throw new Error('Expected an object')
+        }
+
+        return this.mapper.mapObjectFromDb(value)
     }
 }

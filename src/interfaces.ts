@@ -17,4 +17,5 @@ export interface PropertyConverter {
 export interface PropertyOptions {
     name?: string
     converter?: PropertyConverter
+    timestamp?: 'create' | 'update'
 }
