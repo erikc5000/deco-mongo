@@ -11,8 +11,6 @@ export class DoubleConverter implements PropertyConverter {
             return value
         } else if (typeof value === 'number') {
             return new Double(value)
-        } else if (typeof value === 'string') {
-            return new Double(parseInt(value, 10))
         } else {
             throw new Error('Expected a number or string')
         }

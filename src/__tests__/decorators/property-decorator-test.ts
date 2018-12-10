@@ -1,5 +1,5 @@
-import { getPropertyMetadata } from '../metadata/property-metadata'
-import { BirdDocument } from './data/test-data'
+import { getPropertyMetadata } from '../../metadata/property-metadata'
+import { BirdDocument } from '../data/test-data'
 
 describe('Property Decorator', () => {
     it('should have property metadata when defined on a property', () => {

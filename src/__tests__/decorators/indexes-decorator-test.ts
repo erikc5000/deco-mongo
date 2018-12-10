@@ -1,5 +1,5 @@
-import { getIndexesMetadata } from '../metadata/indexes-metadata'
-import { NonIndexedDogDocument, DogDocument, CatDocument } from './data/test-data'
+import { getIndexesMetadata } from '../../metadata/indexes-metadata'
+import { NonIndexedDogDocument, DogDocument, CatDocument } from '../data/test-data'
 
 describe('Indexes Decorator', () => {
     it('should have metadata when provided with a non-empty array', () => {

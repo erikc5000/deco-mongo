@@ -1,5 +1,5 @@
-import { getCollectionMetadata } from '../metadata/collection-metadata'
-import { CatDocument, SchemaCatDocument, catSchema } from './data/test-data'
+import { getCollectionMetadata } from '../../metadata/collection-metadata'
+import { CatDocument, SchemaCatDocument, catSchema } from '../data/test-data'
 
 describe('Collection Decorator', () => {
     it('should have collection metadata', () => {
