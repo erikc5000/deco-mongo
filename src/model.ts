@@ -94,12 +94,8 @@ export class Model<TInterface, TDocument extends object> {
         }
     }
 
-    // map(obj: any) {
-    //     return new Mapper(obj, this.classType)
-    // }
-
     mapToDb(obj: any, options?: MapToDbOptions): any {
-        if (obj instanceof Array) {
+        if (Array.isArray(obj)) {
             return this.mapper.mapObjectsToDb(obj, options)
         } else if (typeof obj === 'object') {
             return this.mapper.mapObjectToDb(obj, options)
@@ -109,7 +105,7 @@ export class Model<TInterface, TDocument extends object> {
     }
 
     mapFromDb(obj: any): Partial<TInterface> | Partial<TInterface>[] {
-        if (obj instanceof Array) {
+        if (Array.isArray(obj)) {
             return this.mapper.mapObjectsFromDb(obj)
         } else if (typeof obj === 'object') {
             return this.mapper.mapObjectFromDb(obj)
