@@ -6,7 +6,7 @@
     "types": "lib/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "build:clean": "rimraf dist && npm run build",
+        "build:clean": "rimraf lib && npm run build",
         "test": "jest",
         "format": "prettier --write \"src/**/*.ts\"",
         "lint": "tslint -p tsconfig.json -c tslint.json",
