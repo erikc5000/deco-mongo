@@ -5,6 +5,9 @@ function isDouble(value: any): value is Double {
     return typeof value === 'object' && typeof value.valueOf === 'function'
 }
 
+/**
+ * Convert number values to the BSON Double represention
+ */
 export class DoubleConverter implements PropertyConverter {
     toDb(value: any) {
         if (value == null) {

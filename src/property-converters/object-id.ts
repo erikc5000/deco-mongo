@@ -6,7 +6,7 @@ function isObjectID(value: any): value is ObjectID {
 }
 
 /**
- * Convert a valid MongoDB object ID in string form into an ObjectID
+ * Convert a valid MongoDB object ID into an ObjectID object
  */
 export class ObjectIdConverter implements PropertyConverter {
     toDb(value: any) {

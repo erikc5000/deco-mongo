@@ -18,7 +18,7 @@ export interface GeoJsonConverterOptions {
 
 function isCoordinates(value: any): value is Coordinates {
     return (
-        value instanceof Array &&
+        Array.isArray(value) &&
         value.length === 2 &&
         typeof value[0] === 'number' &&
         typeof value[1] === 'number'

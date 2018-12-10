@@ -3,11 +3,14 @@ import { Mapper } from '../mapper'
 
 /**
  * Convert properties of a sub-document individually using a class derived from its interface
- * @param c The class to be used for conversion
  */
 export class NestedPropertyConverter<T extends object> implements PropertyConverter {
     private readonly mapper: Mapper<any, T>
 
+    /**
+     * Construct a new nested property converter
+     * @param classType The class to be used for conversion
+     */
     constructor(private readonly classType: ClassType<T>) {
         this.mapper = new Mapper(classType)
     }

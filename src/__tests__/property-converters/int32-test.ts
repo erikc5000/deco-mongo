@@ -1,11 +1,11 @@
-import { DoubleConverter } from '../../property-converters'
-import { Double } from 'bson'
+import { Int32Converter } from '../../property-converters'
+import { Int32 } from 'bson'
 
-describe('Double Converter', () => {
-    let converter: DoubleConverter
+describe('Int32 Converter', () => {
+    let converter: Int32Converter
 
     beforeEach(() => {
-        converter = new DoubleConverter()
+        converter = new Int32Converter()
     })
 
     it('should convert undefined values to DB', () => {
@@ -18,19 +18,19 @@ describe('Double Converter', () => {
 
     it('should convert zero number values to DB', () => {
         const toDbValue = converter.toDb(0.0)
-        expect(toDbValue).toBeInstanceOf(Double)
+        expect(toDbValue).toBeInstanceOf(Int32)
         expect(toDbValue.valueOf()).toEqual(0.0)
     })
 
     it('should convert NaN number values to DB', () => {
         const toDbValue = converter.toDb(NaN)
-        expect(toDbValue).toBeInstanceOf(Double)
+        expect(toDbValue).toBeInstanceOf(Int32)
         expect(toDbValue.valueOf()).toEqual(NaN)
     })
 
     it('should convert non-zero number values to DB', () => {
         const toDbValue = converter.toDb(50)
-        expect(toDbValue).toBeInstanceOf(Double)
+        expect(toDbValue).toBeInstanceOf(Int32)
         expect(toDbValue.valueOf()).toEqual(50)
     })
 
@@ -54,8 +54,8 @@ describe('Double Converter', () => {
         expect(converter.fromDb(null)).toBeNull()
     })
 
-    it('should convert Double values from DB', () => {
-        const fromDbValue = converter.fromDb(new Double(50.0))
+    it('should convert Int32 values from DB', () => {
+        const fromDbValue = converter.fromDb(new Int32(50.0))
         expect(typeof fromDbValue).toEqual('number')
         expect(fromDbValue).toEqual(50.0)
     })
