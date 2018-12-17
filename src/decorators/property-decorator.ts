@@ -1,24 +1,15 @@
 import 'reflect-metadata'
 import {
-    PROPERTY_KEY,
-    CLASS_PROPERTIES_KEY,
-    getClassPropertiesMetadata,
-    ClassPropertiesMetadata
-} from '../metadata/property-metadata'
+    PROPERTIES_KEY,
+    getPropertiesMetadata,
+    PropertiesMetadata
+} from '../metadata/properties-metadata'
 import { PropertyOptions } from '../interfaces'
 
 export function Property(options: PropertyOptions = {}) {
     return (target: any, propertyKey: string | symbol) => {
-        const classProperties =
-            getClassPropertiesMetadata(target.constructor) || new ClassPropertiesMetadata()
-
-        classProperties.mapKey(propertyKey, options.name || propertyKey)
-
-        if (options.timestamp) {
-            classProperties.addTimestampKey(propertyKey, options.timestamp)
-        }
-
-        Reflect.defineMetadata(CLASS_PROPERTIES_KEY, classProperties, target.constructor)
-        Reflect.defineMetadata(PROPERTY_KEY, options, target.constructor, propertyKey)
+        const properties = getPropertiesMetadata(target.constructor) || new PropertiesMetadata()
+        properties.set(propertyKey, options)
+        Reflect.defineMetadata(PROPERTIES_KEY, properties, target.constructor)
     }
 }

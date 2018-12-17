@@ -11,7 +11,7 @@ export interface CollectionOptions {
 
 export interface PropertyConverter {
     toDb(value: any): any
-    fromDb(value: any, targetType?: any): any
+    fromDb(value: any, targetType?: object): any
 }
 
 export interface PropertyOptions {

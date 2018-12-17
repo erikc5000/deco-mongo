@@ -1,12 +1,18 @@
-import { getPropertyMetadata } from '../../metadata/property-metadata'
+import { getPropertiesMetadata, PropertyMetadata } from '../../metadata/properties-metadata'
 import { BirdDocument } from '../data/test-data'
 
 describe('Property Decorator', () => {
-    it('should have property metadata when defined on a property', () => {
-        const metadata = getPropertyMetadata(BirdDocument, 'color')
-        expect(metadata).toBeDefined()
-        expect(metadata!.name).toBe('mappedColor')
-        expect(metadata!.converter).toBeDefined()
+    it('should create metadata when defined on a property', () => {
+        const propertiesMetadata = getPropertiesMetadata(BirdDocument)
+        expect(propertiesMetadata).toBeDefined()
+        expect(propertiesMetadata!.allKeys).toContain('color')
+        expect(propertiesMetadata!.has('color')).toBeTruthy()
+        expect(propertiesMetadata!.getKeyFromMappedKey('mappedColor')).toBe('color')
+
+        const propertyMetadata = propertiesMetadata!.get('color')
+        expect(propertyMetadata).toBeInstanceOf(PropertyMetadata)
+        expect(propertyMetadata.keyName).toBe('color')
+        expect(propertyMetadata.mappedKeyName).toBe('mappedColor')
     })
 
     // it('should allow a JSON schema object to be provided as an option', () => {

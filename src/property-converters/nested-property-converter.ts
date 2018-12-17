@@ -22,7 +22,7 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
             throw new Error('Expected an object')
         }
 
-        return this.mapper.mapObjectToDb(value)
+        return this.mapper.mapForInsert(value)
     }
 
     fromDb(value: any) {
@@ -32,6 +32,6 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
             throw new Error('Expected an object')
         }
 
-        return this.mapper.mapObjectFromDb(value)
+        return this.mapper.mapFromDb(value)
     }
 }
