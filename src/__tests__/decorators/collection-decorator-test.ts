@@ -6,7 +6,7 @@ describe('Collection Decorator', () => {
         const metadata = getCollectionMetadata(CatDocument)
         expect(metadata).toBeDefined()
         expect(metadata.name).toBe('cats')
-        expect(metadata.options).not.toBeDefined()
+        expect(metadata.options).toBeUndefined()
     })
 
     it('should allow a JSON schema object to be provided as an option', () => {

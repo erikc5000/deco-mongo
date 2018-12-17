@@ -16,6 +16,6 @@ describe('Indexes Decorator', () => {
 
     it('should not have metadata when the decorator is missing', () => {
         const metadata = getIndexesMetadata(CatDocument)
-        expect(metadata).not.toBeDefined()
+        expect(metadata).toBeUndefined()
     })
 })
