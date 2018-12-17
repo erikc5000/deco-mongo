@@ -60,7 +60,13 @@ describe('Int32 Converter', () => {
         expect(fromDbValue).toEqual(50.0)
     })
 
-    it('should fail to convert numbers from DB', () => {
-        expect(() => converter.fromDb(50.0)).toThrow(Error)
+    it('should convert number values from DB', () => {
+        const fromDbValue = converter.fromDb(50.0)
+        expect(typeof fromDbValue).toEqual('number')
+        expect(fromDbValue).toEqual(50.0)
+    })
+
+    it('should fail to convert strings from DB', () => {
+        expect(() => converter.fromDb("50.0")).toThrow(Error)
     })
 })
