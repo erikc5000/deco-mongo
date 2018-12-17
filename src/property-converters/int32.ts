@@ -22,6 +22,8 @@ export class Int32Converter implements PropertyConverter {
     fromDb(value: any) {
         if (value == null) {
             return value
+        } else if (typeof value === 'number') {
+            return value
         } else if (isInt32(value)) {
             return value.valueOf()
         } else {

@@ -22,6 +22,8 @@ export class DoubleConverter implements PropertyConverter {
     fromDb(value: any) {
         if (value == null) {
             return value
+        } else if (typeof value === 'number') {
+            return value
         } else if (isDouble(value)) {
             return value.valueOf()
         } else {
