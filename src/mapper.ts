@@ -2,49 +2,41 @@ import { ClassType } from './interfaces'
 import { getPropertiesMetadata, PropertiesMetadata } from './metadata/properties-metadata'
 import 'reflect-metadata'
 
-export interface MapForInsertOptions {
-    timestamps?: 'create' | 'update'
-}
-
 export interface MapForUpdateOptions {
-    populateCreationTimestamp?: boolean
+    upsert?: boolean
 }
 
 export interface UpdateOperation {
     $set?: object
+    $setOnInsert?: object
     $unset?: object
-    $currentDate?: object
 }
 
 export class Mapper<TInterface, TDocument extends object> {
     constructor(private readonly classType: ClassType<TDocument>) {}
 
-    mapForInsert(document: TDocument, options?: MapForInsertOptions) {
+    mapForInsert(document: TDocument) {
         const properties = this.getPropertiesMetadata()
         const mappedObject: any = {}
 
         for (const key of properties.allKeys) {
             const property = properties.get(key)
-            const value = (document as any)[key]
-            mappedObject[property.mappedKeyName] = property.getMappedValue(value)
+
+            if (!property.isTimestamp) {
+                const value = (document as any)[key]
+                mappedObject[property.mappedKeyName] = property.getMappedValue(value)
+            }
         }
 
-        // TODO: Add support for local-generated timestamps as option
-        // if (options && options.timestamps) {
-        //     return this.addTimestamps(mappedObject, options.timestamps, properties)
-        // } else {
-        //     return mappedObject
-        // }
-        return mappedObject
+        return Mapper.populateTimestamps(mappedObject, 'create', properties)
     }
 
     mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation {
-        const populateCreationTimestamp = (options && options.populateCreationTimestamp) || false
         const properties = this.getPropertiesMetadata()
 
         let set: any
+        let setOnInsert: any
         let unset: any
-        let currentDate: any
 
         for (const key of properties.allKeys) {
             const property = properties.get(key)
@@ -54,63 +46,58 @@ export class Mapper<TInterface, TDocument extends object> {
                 continue
             }
 
-            if (property.isTimestamp) {
-                if (
-                    (property.isCreationTimestamp && populateCreationTimestamp) ||
-                    property.isUpdateTimestamp
-                ) {
-                    if (!currentDate) currentDate = {}
-                    currentDate[property.mappedKeyName] = true
-                }
-            } else {
+            if (!property.isTimestamp) {
                 const value = (document as any)[key]
 
                 if (typeof value === 'undefined') {
-                    if (!unset) unset = {}
+                    if (unset == null) unset = {}
                     unset[property.mappedKeyName] = ''
                 } else {
-                    if (!set) set = {}
+                    if (set == null) set = {}
                     set[property.mappedKeyName] = property.getMappedValue(value)
                 }
             }
         }
 
-        return { $set: set, $unset: unset, $currentDate: currentDate }
+        // Populate timestamps
+        const upsert = (options && options.upsert) || false
+        const timestampKeys = upsert ? properties.allTimestampKeys : properties.updateTimestampKeys
+
+        if (timestampKeys.length) {
+            const timestamp = new Date()
+
+            for (const key of timestampKeys) {
+                const property = properties.get(key)
+                const mappedKey = property.mappedKeyName
+
+                if (property.isCreationTimestamp) {
+                    if (setOnInsert == null) setOnInsert = {}
+                    setOnInsert[mappedKey]
+                } else {
+                    if (set == null) set = {}
+                    set[mappedKey] = timestamp
+                }
+            }
+        }
+
+        return { $set: set, $setOnInsert: setOnInsert, $unset: unset }
     }
 
-    mapPartialToDb(obj: Partial<TInterface>, options?: MapForInsertOptions) {
+    mapPartialToDb(obj: Partial<TInterface>) {
         const properties = this.getPropertiesMetadata()
         const mappedObject: any = {}
 
         // tslint:disable-next-line:forin
         for (const key in obj) {
-            // const type = Reflect.getMetadata('design:type', classType, key);
             const property = properties.get(key)
             const value = obj[key]
             mappedObject[property.mappedKeyName] = property.getMappedValue(value)
         }
 
-        // if (options && options.timestamps) {
-        //     return this.addTimestamps(mappedObject, options.timestamps, properties)
-        // } else {
-        //     return mappedObject
-        // }
         return mappedObject
     }
 
-    mapManyForInsert(objects: TDocument[], options?: MapForInsertOptions) {
-        return objects.map(obj => this.mapForInsert(obj, options))
-    }
-
-    mapManyForUpdate(objects: TDocument[], options?: MapForUpdateOptions) {
-        return objects.map(obj => this.mapForUpdate(obj, options))
-    }
-
-    mapPartialsToDb(objects: Partial<TInterface>[], options?: MapForInsertOptions) {
-        return objects.map(obj => this.mapPartialToDb(obj, options))
-    }
-
-    mapFromDb(mappedObject: any): TDocument {
+    mapFromResult(mappedObject: any): TDocument {
         const properties = this.getPropertiesMetadata()
         const obj = new this.classType()
 
@@ -143,7 +130,7 @@ export class Mapper<TInterface, TDocument extends object> {
                 const property = properties.get(key)
                 const designType = Reflect.getMetadata('design:type', this.classType, key)
                 const value = property.getValueFromMappedValue(mappedObject[mappedKey], designType)
-                ;(obj as any)[key] = value
+                obj[key] = value
             }
         }
 
@@ -151,11 +138,7 @@ export class Mapper<TInterface, TDocument extends object> {
     }
 
     mapManyFromDb(objects: any[]): TDocument[] {
-        return objects.map(obj => this.mapFromDb(obj))
-    }
-
-    mapPartialsFromDb(objects: any[]): Partial<TInterface>[] {
-        return objects.map(obj => this.mapPartialFromDb(obj))
+        return objects.map(obj => this.mapFromResult(obj))
     }
 
     private getPropertiesMetadata() {
@@ -168,27 +151,23 @@ export class Mapper<TInterface, TDocument extends object> {
         return properties
     }
 
-    // private addTimestamps(obj: any, type: 'create' | 'update', properties: PropertiesMetadata) {
-    //     const keys =
-    //         type === 'create' ? properties.allTimestampKeys : properties.updateTimestampKeys
+    private static populateTimestamps(
+        obj: any,
+        type: 'create' | 'update',
+        properties: PropertiesMetadata
+    ) {
+        const keys =
+            type === 'create' ? properties.allTimestampKeys : properties.updateTimestampKeys
 
-    //     if (keys.length) {
-    //         const timestamp = new Date()
+        if (keys.length) {
+            const timestamp = new Date()
 
-    //         for (const key of keys) {
-    //             const mappedKey = properties.get(key).mappedKeyName
-    //             obj[mappedKey] = timestamp
-    //         }
-    //     }
+            for (const key of keys) {
+                const mappedKey = properties.get(key).mappedKeyName
+                obj[mappedKey] = timestamp
+            }
+        }
 
-    //     // Make sure that creation timestamps can't be overwritten during an update
-    //     if (type === 'update') {
-    //         for (const key of properties.createTimestampKeys) {
-    //             const mappedKey = properties.get(key).mappedKeyName
-    //             delete obj[mappedKey]
-    //         }
-    //     }
-
-    //     return obj
-    // }
+        return obj
+    }
 }

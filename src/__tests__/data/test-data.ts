@@ -20,7 +20,7 @@ export const catSchema = {
     }
 }
 
-@Collection('schemaCats', { jsonSchema: catSchema })
+@Collection('schemaCats', { jsonSchema: { use: catSchema } })
 export class SchemaCatDocument implements Cat {
     name?: string
 }

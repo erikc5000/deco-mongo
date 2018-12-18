@@ -1,19 +1,20 @@
 import * as mongo from 'mongodb'
-import { collectionExists } from './mongo-util'
+import { collectionExists, isIndexOptionsConflictError } from './mongo-util'
 import { getCollectionMetadata } from './metadata/collection-metadata'
 import { getIndexesMetadata } from './metadata/indexes-metadata'
-import { ClassType } from './interfaces'
-import { Mapper, MapForInsertOptions, MapForUpdateOptions } from './mapper'
+import { ClassType, JsonSchemaOptions, CollectionOptions } from './interfaces'
+import { Mapper, MapForUpdateOptions, UpdateOperation } from './mapper'
+import { create } from 'domain'
 
-function processJsonSchemaOption(jsonSchemaOption?: boolean | object) {
-    if (typeof jsonSchemaOption === 'boolean' && jsonSchemaOption) {
-        // generateJsonSchema()
-    } else if (typeof jsonSchemaOption === 'object') {
-        return jsonSchemaOption
-    }
-
-    return undefined
-}
+// function processJsonSchemaOptions(jsonSchemaOption?: JsonSchemaOptions | undefined) {
+//     if (typeof jsonSchemaOption === 'boolean') {
+//         if (jsonSchemaOption) {
+//             // generateJsonSchema()
+//         }
+//     } else if (typeof jsonSchemaOption === 'object') {
+//         return jsonSchemaOption
+//     }
+// }
 
 export class Model<TInterface, TDocument extends object> {
     private readonly mapper: Mapper<TInterface, TDocument>
@@ -30,117 +31,129 @@ export class Model<TInterface, TDocument extends object> {
         db: mongo.Db
     ) {
         const { name, options } = getCollectionMetadata(classType)
-        const indexSpecs = getIndexesMetadata(classType)
-
-        let createOptions: mongo.CollectionCreateOptions = {}
-        let jsonSchema: object | undefined
-
-        if (options) {
-            if (options.mongoCreateOptions) createOptions = options.mongoCreateOptions
-
-            jsonSchema = processJsonSchemaOption(options.jsonSchema)
-        }
-
-        if (jsonSchema) createOptions.validator = { $jsonSchema: jsonSchema }
-
-        let collection: mongo.Collection
         const collExists = await collectionExists(name, db)
+        let collection: mongo.Collection
 
         if (collExists) {
             collection = db.collection(name)
 
-            if (jsonSchema) {
-                await db.command({
-                    collMod: 'gyms',
-                    validator: createOptions.validator
-                })
-            } else {
-                await db.command({ collMod: 'gyms', validator: {} })
+            if (options && options.jsonSchema && options.jsonSchema.autoApply === 'always') {
+                const validator = options.jsonSchema.use
+                    ? { $jsonSchema: options.jsonSchema.use }
+                    : {}
+                await db.command({ collMod: name, validator })
             }
         } else {
+            const createOptions = Model.getCollectionCreateOptions(options)
             collection = await db.createCollection(name, createOptions)
         }
 
-        if (indexSpecs && indexSpecs.length > 0) {
-            try {
-                await collection.createIndexes(indexSpecs)
-            } catch (err) {
-                // IndexOptionsConflict
-                if (err instanceof mongo.MongoError && err.code === 85) {
-                    // TODO: Revisit logging
-                    // Logger.warn(err.errmsg);
-                }
-            }
+        if (
+            options &&
+            (options.autoCreateIndexes === 'always' ||
+                (!collExists && options.autoCreateIndexes === 'ifNewCollection'))
+        ) {
+            await Model.createIndexes(classType, collection)
         }
 
         return new Model<TInterface, TDocument>(classType, collection)
     }
 
-    async insertMany(objs: TDocument[], options?: mongo.CollectionInsertManyOptions) {
-        const mappedObjects = this.mapForInsert(objs, { timestamps: 'create' })
-        const result = await this.collection.insertMany(mappedObjects, options)
-
-        if (result.ops.length) {
-            return this.mapFromDb(result.ops)
-        }
-    }
-
-    async insertOne(obj: TDocument, options?: mongo.CollectionInsertOneOptions) {
-        const mappedObject = this.mapForInsert(obj, { timestamps: 'create' })
-        const result = await this.collection.insertOne(mappedObject, options)
-
-        if (result.ops.length) {
-            return this.mapFromDb(result.ops[0])
-        }
-    }
-
-    mapForInsert(obj: TDocument | TDocument[], options?: MapForInsertOptions): any {
-        if (Array.isArray(obj)) {
-            return this.mapper.mapManyForInsert(obj, options)
-        } else if (typeof obj === 'object') {
-            return this.mapper.mapForInsert(obj, options)
+    mapForInsert(document: TDocument): any
+    mapForInsert(documents: TDocument[]): any[]
+    mapForInsert(document: TDocument | TDocument[]): any {
+        if (Array.isArray(document)) {
+            return document.map(obj => this.mapper.mapForInsert(obj))
+        } else if (document instanceof this.classType) {
+            return this.mapper.mapForInsert(document)
         } else {
-            throw new Error(`Mapping unexpected type '${typeof obj}'`)
+            return Model.unexpectedTypeError(document)
         }
     }
 
-    mapForUpdate(obj: TDocument | TDocument[], options?: MapForUpdateOptions): any {
-        if (Array.isArray(obj)) {
-            return this.mapper.mapManyForUpdate(obj, options)
-        } else if (typeof obj === 'object') {
-            return this.mapper.mapForUpdate(obj, options)
+    mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation
+    mapForUpdate(documents: TDocument[], options?: MapForUpdateOptions): UpdateOperation[]
+    mapForUpdate(document: TDocument | TDocument[], options?: MapForUpdateOptions): any {
+        if (Array.isArray(document)) {
+            return document.map(obj => this.mapper.mapForUpdate(obj), options)
+        } else if (document instanceof this.classType) {
+            return this.mapper.mapForUpdate(document, options)
         } else {
-            throw new Error(`Mapping unexpected type '${typeof obj}'`)
+            return Model.unexpectedTypeError(document)
         }
     }
 
-    mapPartialToDb(obj: Partial<TInterface>, options?: MapForInsertOptions): any {
-        if (Array.isArray(obj)) {
-            return this.mapper.mapPartialsToDb(obj, options)
-        } else if (typeof obj === 'object') {
-            return this.mapper.mapPartialToDb(obj, options)
+    mapFromResult(object: object | object[]): TDocument | TDocument[] {
+        if (Array.isArray(object)) {
+            return object.map(obj => this.mapper.mapFromResult(obj))
+        } else if (typeof object === 'object') {
+            return this.mapper.mapFromResult(object)
         } else {
-            throw new Error(`Mapping unexpected type '${typeof obj}'`)
+            return Model.unexpectedTypeError(object)
         }
     }
 
-    mapFromDb(obj: any): TDocument | TDocument[] {
-        if (Array.isArray(obj)) {
-            return this.mapper.mapManyFromDb(obj)
-        } else if (typeof obj === 'object') {
-            return this.mapper.mapFromDb(obj)
+    mapPartialToDb(object: Partial<TInterface>): any
+    mapPartialToDb(objects: Partial<TInterface>[]): any[]
+    mapPartialToDb(object: Partial<TInterface> | Partial<TInterface>[]): any {
+        if (Array.isArray(object)) {
+            return object.map(obj => this.mapper.mapPartialToDb(obj))
+        } else if (typeof object === 'object') {
+            return this.mapper.mapPartialToDb(object)
         } else {
-            throw new Error(`Mapping unexpected type '${typeof obj}'`)
+            return Model.unexpectedTypeError(object)
         }
     }
 
-    mapPartialFromDb(obj: any): Partial<TInterface> | Partial<TInterface>[] {
-        if (Array.isArray(obj)) {
-            return this.mapper.mapPartialsFromDb(obj)
-        } else if (typeof obj === 'object') {
-            return this.mapper.mapPartialFromDb(obj)
+    mapPartialFromDb(object: object | object[]): Partial<TInterface> | Partial<TInterface>[] {
+        if (Array.isArray(object)) {
+            return object.map(obj => this.mapper.mapPartialFromDb(obj))
+        } else if (typeof object === 'object') {
+            return this.mapper.mapPartialFromDb(object)
         } else {
-            throw new Error(`Mapping unexpected type '${typeof obj}'`)
+            return Model.unexpectedTypeError(object)
         }
+    }
+
+    private static getCollectionCreateOptions(options?: CollectionOptions) {
+        let createOptions: mongo.CollectionCreateOptions = {}
+
+        if (options) {
+            if (options.mongoCreateOptions) {
+                createOptions = options.mongoCreateOptions
+            }
+
+            if (
+                options.jsonSchema &&
+                options.jsonSchema.autoApply !== 'never' &&
+                options.jsonSchema.use
+            ) {
+                createOptions.validator = { $jsonSchema: options.jsonSchema.use }
+            }
+        }
+
+        return createOptions
+    }
+
+    private static async createIndexes<TDocument extends object>(
+        classType: ClassType<TDocument>,
+        collection: mongo.Collection
+    ) {
+        const indexSpecs = getIndexesMetadata(classType)
+
+        if (indexSpecs && indexSpecs.length > 0) {
+            try {
+                await collection.createIndexes(indexSpecs)
+            } catch (err) {
+                if (isIndexOptionsConflictError(err)) {
+                    // TODO: Revisit logging
+                    // Logger.warn(err.errmsg);
+                }
+            }
+        }
+    }
+
+    private static unexpectedTypeError(object: any): never {
+        throw new Error(`Mapping unexpected type '${typeof object}'`)
     }
 }
