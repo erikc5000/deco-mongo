@@ -1,6 +1,6 @@
-import { GeoJsonConverter } from '../../property-converters';
+import { GeoJsonConverter } from '.'
 
-describe('Geo JSON Location Converter', () => {
+describe('GeoJSON location converter', () => {
     let converter: GeoJsonConverter
 
     beforeEach(() => {
@@ -31,7 +31,7 @@ describe('Geo JSON Location Converter', () => {
     })
 
     it('should fail to convert arrays with any non-number elements to DB', () => {
-        expect(() => converter.toDb([40.0, "45.0"])).toThrow(Error)
+        expect(() => converter.toDb([40.0, '45.0'])).toThrow(Error)
     })
 
     it('should convert undefined values from DB', () => {
@@ -43,7 +43,7 @@ describe('Geo JSON Location Converter', () => {
     })
 
     it('should convert Geo JSON location objects from DB, irrespective of type', () => {
-        const fromDbValue = converter.fromDb({ coordinates: [45.0, 40.0], type: 'NotAPoint'})
+        const fromDbValue = converter.fromDb({ coordinates: [45.0, 40.0], type: 'NotAPoint' })
         expect(fromDbValue).toBeInstanceOf(Array)
         expect(fromDbValue).toHaveLength(2)
         expect(fromDbValue[0]).toBe(40.0)
@@ -51,6 +51,6 @@ describe('Geo JSON Location Converter', () => {
     })
 
     it('should fail to convert coordinates from DB', () => {
-        expect(() => converter.fromDb([40., 45.0])).toThrow(Error)
+        expect(() => converter.fromDb([40, 45.0])).toThrow(Error)
     })
 })

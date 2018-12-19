@@ -1,7 +1,7 @@
-import { DoubleConverter } from '../../property-converters'
+import { DoubleConverter } from '.'
 import { Double } from 'bson'
 
-describe('Double Converter', () => {
+describe('Double converter', () => {
     let converter: DoubleConverter
 
     beforeEach(() => {
@@ -35,7 +35,7 @@ describe('Double Converter', () => {
     })
 
     it('should fail to convert string values to DB', () => {
-        expect(() => converter.toDb("50")).toThrow(Error)
+        expect(() => converter.toDb('50')).toThrow(Error)
     })
 
     it('should fail to convert boolean values to DB', () => {
@@ -67,6 +67,6 @@ describe('Double Converter', () => {
     })
 
     it('should fail to convert strings from DB', () => {
-        expect(() => converter.fromDb("50.0")).toThrow(Error)
+        expect(() => converter.fromDb('50.0')).toThrow(Error)
     })
 })

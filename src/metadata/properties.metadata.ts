@@ -13,7 +13,7 @@ export class PropertyMetadata {
         return this.options.timestamp ? true : false
     }
 
-    get isCreationTimestamp() {
+    get isCreateTimestamp() {
         return this.options.timestamp === 'create'
     }
 
@@ -21,11 +21,11 @@ export class PropertyMetadata {
         return this.options.timestamp === 'update'
     }
 
-    getMappedValue(value: any) {
+    mapValueToDb(value: any) {
         return this.options.converter ? this.options.converter.toDb(value) : value
     }
 
-    getValueFromMappedValue(mappedValue: any, targetType?: object) {
+    mapValueFromDb(mappedValue: any, targetType?: object) {
         return this.options.converter
             ? this.options.converter.fromDb(mappedValue, targetType)
             : mappedValue
@@ -34,63 +34,71 @@ export class PropertyMetadata {
 
 export class PropertiesMetadata {
     private readonly keyMap = new Map<string | symbol, PropertyMetadata>()
-    private readonly reverseKeyMap = new Map<string | symbol, string | symbol>()
-    private readonly createTimestampList: (string | symbol)[] = []
-    private readonly updateTimestampList: (string | symbol)[] = []
+    private readonly reverseKeyMap = new Map<string | symbol, PropertyMetadata>()
+    private readonly createTimestamps: PropertyMetadata[] = []
+    private readonly updateTimestamps: PropertyMetadata[] = []
 
     set(keyName: string | symbol, options: PropertyOptions) {
-        this.keyMap.set(keyName, new PropertyMetadata(keyName, options))
+        if (this.keyMap.has(keyName)) {
+            throw new Error(`'${String(keyName)}' has more than one @Property() decorator.`)
+        }
 
         const mappedKeyName = options.name || keyName
 
         if (this.reverseKeyMap.has(mappedKeyName)) {
             throw new Error(
-                `Detected multiple properties mapped to the name '${String(mappedKeyName)}'.  ` +
+                `Multiple properties are mapped to the name '${String(mappedKeyName)}'.  ` +
                     `Check @Property() definitions.`
             )
         }
 
-        this.reverseKeyMap.set(mappedKeyName, keyName)
+        const property = new PropertyMetadata(keyName, options)
+        this.keyMap.set(keyName, property)
+        this.reverseKeyMap.set(mappedKeyName, property)
 
         if (options.timestamp === 'create') {
-            this.createTimestampList.push(keyName)
+            this.createTimestamps.push(property)
         } else if (options.timestamp === 'update') {
-            this.updateTimestampList.push(keyName)
+            this.updateTimestamps.push(property)
         }
     }
 
     has(keyName: string | symbol) {
-        return this.keyMap.get(keyName) ? true : false
+        return this.keyMap.has(keyName)
+    }
+
+    hasMappedKey(mappedKey: string | symbol) {
+        return this.reverseKeyMap.has(mappedKey)
     }
 
     get(keyName: string | symbol) {
         const propertyMetadata = this.keyMap.get(keyName)
 
         if (!propertyMetadata) {
-            throw new Error(`Invalid key '${String(keyName)}'`)
+            throw new Error(`Invalid key name '${String(keyName)}'`)
         }
 
         return propertyMetadata
     }
 
-    getKeyFromMappedKey(mappedKey: string | symbol) {
+    getFromMappedKey(mappedKey: string | symbol) {
         return this.reverseKeyMap.get(mappedKey)
     }
 
-    get allKeys() {
-        return this.keyMap.keys()
+    all() {
+        return this.keyMap.values()
     }
 
-    get allTimestampKeys() {
-        return [...this.createTimestampList, ...this.updateTimestampList]
+    withTimestamp() {
+        return [...this.createTimestamps, ...this.updateTimestamps]
     }
 
-    get createTimestampKeys() {
-        return this.createTimestampList
+    withCreateTimestamp() {
+        return this.createTimestamps
     }
 
-    get updateTimestampKeys() {
-        return this.updateTimestampList
+    withUpdateTimestamp() {
+        return this.updateTimestamps
     }
 }
 

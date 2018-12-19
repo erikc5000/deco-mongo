@@ -1,7 +1,7 @@
-import { UuidConverter } from '../../property-converters'
-import { Binary } from 'bson';
+import { UuidConverter } from '.'
+import { Binary } from 'bson'
 
-describe('UUID Converter', () => {
+describe('UUID converter', () => {
     let converter: UuidConverter
 
     beforeEach(() => {
@@ -17,7 +17,7 @@ describe('UUID Converter', () => {
     })
 
     it('should convert valid string UUIDs to DB', () => {
-        const toDbValue = converter.toDb("0d46691c-c7c5-4f38-9aad-fe2ecfca8ef2")
+        const toDbValue = converter.toDb('0d46691c-c7c5-4f38-9aad-fe2ecfca8ef2')
         expect(toDbValue).toBeInstanceOf(Binary)
         expect((toDbValue as Binary).sub_type).toBe(Binary.SUBTYPE_UUID)
         // expect((toDbValue as Binary).buffer).toEqual(Binary.SUBTYPE_UUID)

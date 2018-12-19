@@ -1,20 +1,9 @@
 import * as mongo from 'mongodb'
 import { collectionExists, isIndexOptionsConflictError } from './mongo-util'
-import { getCollectionMetadata } from './metadata/collection-metadata'
-import { getIndexesMetadata } from './metadata/indexes-metadata'
-import { ClassType, JsonSchemaOptions, CollectionOptions } from './interfaces'
+import { getCollectionMetadata } from './metadata/collection.metadata'
+import { getIndexesMetadata } from './metadata/indexes.metadata'
+import { ClassType, CollectionOptions } from './interfaces'
 import { Mapper, MapForUpdateOptions, UpdateOperation } from './mapper'
-import { create } from 'domain'
-
-// function processJsonSchemaOptions(jsonSchemaOption?: JsonSchemaOptions | undefined) {
-//     if (typeof jsonSchemaOption === 'boolean') {
-//         if (jsonSchemaOption) {
-//             // generateJsonSchema()
-//         }
-//     } else if (typeof jsonSchemaOption === 'object') {
-//         return jsonSchemaOption
-//     }
-// }
 
 export class Model<TInterface, TDocument extends object> {
     private readonly mapper: Mapper<TInterface, TDocument>

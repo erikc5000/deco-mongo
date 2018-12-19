@@ -12,13 +12,5 @@ export function getCollectionMetadata<TDocument>(c: ClassType<TDocument>) {
         throw new Error(`${c} has no @Collection() decorator`)
     }
 
-    const metadata = Reflect.getMetadata(COLLECTION_KEY, c) as CollectionMetadata
-
-    if (typeof metadata.name !== 'string') {
-        throw new Error(`${c}: @Collection() name must be a string`)
-    } else if (metadata.options && typeof metadata.options !== 'object') {
-        throw new Error(`${c}: @Collection() options must be an object`)
-    }
-
-    return metadata
+    return Reflect.getMetadata(COLLECTION_KEY, c) as CollectionMetadata
 }

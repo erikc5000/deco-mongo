@@ -1,16 +1,21 @@
 {
     "name": "deco-mongo",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "A modern and lightweight Mongo ODM library written in Typescript",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "scripts": {
-        "build": "tsc",
-        "build:clean": "rimraf lib && npm run build",
-        "test": "jest",
+        "build": "npm run build:clean && npm run build:tsc",
+        "build:clean": "rimraf lib",
+        "build:tsc": "tsc",
+        "build:watch": "tsc --watch",
+        "test": "npm run test:unit && npm run test:e2e",
+        "test:unit": "jest",
+        "test:e2e": "jest --config ./test/jest-e2e.json",
+        "test:cov": "jest --coverage",
         "format": "prettier --write \"src/**/*.ts\"",
         "lint": "tslint -p tsconfig.json -c tslint.json",
-        "lint-check": "tslint-config-prettier-check ./tslint.json"
+        "lint:check": "tslint-config-prettier-check ./tslint.json"
     },
     "keywords": [
         "mongo",
@@ -18,7 +23,7 @@
         "odm"
     ],
     "author": "Erik Christensen",
-    "license": "MIT",
+    "license": "ISC",
     "devDependencies": {
         "@types/jest": "^23.3.10",
         "@types/mongodb": "^3.1.17",
@@ -41,8 +46,17 @@
         "reflect-metadata": "^0.1.12"
     },
     "jest": {
-        "modulePathIgnorePatterns": [
-            "data/*"
-        ]
+        "moduleFileExtensions": [
+            "js",
+            "json",
+            "ts"
+        ],
+        "rootDir": "src",
+        "testRegex": ".spec.ts$",
+        "transform": {
+            "^.+\\.(t|j)s$": "ts-jest"
+        },
+        "coverageDirectory": "../coverage",
+        "testEnvironment": "node"
     }
 }

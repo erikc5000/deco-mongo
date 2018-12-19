@@ -1,7 +1,7 @@
-import { Int32Converter } from '../../property-converters'
+import { Int32Converter } from '.'
 import { Int32 } from 'bson'
 
-describe('Int32 Converter', () => {
+describe('Int32 converter', () => {
     let converter: Int32Converter
 
     beforeEach(() => {
@@ -35,7 +35,7 @@ describe('Int32 Converter', () => {
     })
 
     it('should fail to convert string values to DB', () => {
-        expect(() => converter.toDb("50")).toThrow(Error)
+        expect(() => converter.toDb('50')).toThrow(Error)
     })
 
     it('should fail to convert boolean values to DB', () => {
@@ -67,6 +67,6 @@ describe('Int32 Converter', () => {
     })
 
     it('should fail to convert strings from DB', () => {
-        expect(() => converter.fromDb("50.0")).toThrow(Error)
+        expect(() => converter.fromDb('50.0')).toThrow(Error)
     })
 })

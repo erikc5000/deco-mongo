@@ -31,8 +31,7 @@ export class UuidConverter implements PropertyConverter {
     fromDb(value: any) {
         if (value == null) {
             return value
-        } else if (!isBinary(value))
-            throw new Error('Expected a Binary object')
+        } else if (!isBinary(value)) throw new Error('Expected a Binary object')
 
         const buffer = value.buffer
 
