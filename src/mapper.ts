@@ -12,18 +12,25 @@ export interface UpdateOperation {
     $unset?: any
 }
 
+export interface MapperOptions {
+    nested?: boolean
+}
+
 /**
  * Map objects between their in-memory and database representations.
  */
 export class Mapper<TInterface, TDocument extends object> {
     private readonly properties: PropertiesMetadata
 
-    constructor(private readonly classType: ClassType<TDocument>) {
+    constructor(
+        private readonly classType: ClassType<TDocument>,
+        private readonly options: MapperOptions = {}
+    ) {
         const properties = getPropertiesMetadata(this.classType)
 
         if (!properties) {
             throw new Error(`No properties are defined on ${classType}.`)
-        } else if (!properties.hasMappedKey('_id')) {
+        } else if (!options.nested && !properties.hasMappedKey('_id')) {
             throw new Error(`${classType} has no property mapped to '_id'.`)
         }
 
@@ -36,7 +43,11 @@ export class Mapper<TInterface, TDocument extends object> {
         for (const property of this.properties.all()) {
             if (!property.isTimestamp) {
                 const value = (document as any)[property.keyName]
-                mappedObject[property.mappedKeyName] = property.mapValueToDb(value)
+                const mappedValue = property.mapValueToDb(value)
+
+                if (mappedValue !== undefined) {
+                    mappedObject[property.mappedKeyName] = mappedValue
+                }
             }
         }
 
@@ -92,7 +103,7 @@ export class Mapper<TInterface, TDocument extends object> {
             if (mappedKey in mappedObject) {
                 const designType = Reflect.getMetadata(
                     'design:type',
-                    this.classType,
+                    this.classType.prototype,
                     property.keyName
                 ) as object
 
@@ -118,7 +129,7 @@ export class Mapper<TInterface, TDocument extends object> {
             if (property) {
                 const designType = Reflect.getMetadata(
                     'design:type',
-                    this.classType,
+                    this.classType.prototype,
                     property.keyName
                 )
 

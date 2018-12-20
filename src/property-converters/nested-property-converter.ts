@@ -12,7 +12,7 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
      * @param classType The class to be used for conversion
      */
     constructor(private readonly classType: ClassType<T>) {
-        this.mapper = new Mapper(classType)
+        this.mapper = new Mapper(classType, { nested: true })
     }
 
     toDb(value: any) {
