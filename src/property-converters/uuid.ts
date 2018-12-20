@@ -6,11 +6,17 @@ function isBinary(value: any): value is Binary {
 }
 
 /**
- * Convert a valid UUID in string form to a BSON Binary
+ * Convert a UUID in string form to a BSON Binary
  */
 export class UuidConverter implements PropertyConverter {
     toDb(value: any) {
         if (value == null) {
+            return value
+        } else if (value instanceof Binary) {
+            if (value.sub_type !== Binary.SUBTYPE_UUID) {
+                throw new Error(`Expected Binary '${value.value}' to have a UUID subtype`)
+            }
+
             return value
         }
 
@@ -28,10 +34,12 @@ export class UuidConverter implements PropertyConverter {
         return new Binary(buffer, Binary.SUBTYPE_UUID)
     }
 
-    fromDb(value: any) {
+    fromDb(value: any, targetType?: object) {
         if (value == null) {
             return value
-        } else if (!isBinary(value)) throw new Error('Expected a Binary object')
+        } else if (!isBinary(value)) {
+            throw new Error('Expected a Binary object')
+        }
 
         const buffer = value.buffer
 
@@ -43,16 +51,26 @@ export class UuidConverter implements PropertyConverter {
             throw new Error(`Binary doesn't have UUID subtype`)
         }
 
-        return (
-            buffer.toString('hex', 0, 4) +
-            '-' +
-            buffer.toString('hex', 4, 6) +
-            '-' +
-            buffer.toString('hex', 6, 8) +
-            '-' +
-            buffer.toString('hex', 8, 10) +
-            '-' +
-            buffer.toString('hex', 10, 16)
-        )
+        switch (targetType) {
+            case Binary:
+                return value
+            case Buffer:
+                return buffer
+            case String:
+            case undefined:
+                return (
+                    buffer.toString('hex', 0, 4) +
+                    '-' +
+                    buffer.toString('hex', 4, 6) +
+                    '-' +
+                    buffer.toString('hex', 6, 8) +
+                    '-' +
+                    buffer.toString('hex', 8, 10) +
+                    '-' +
+                    buffer.toString('hex', 10, 16)
+                )
+            default:
+                throw new Error(`Incompatible target type '${targetType}'`)
+        }
     }
 }
