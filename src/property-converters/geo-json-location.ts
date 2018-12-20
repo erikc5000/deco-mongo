@@ -63,6 +63,8 @@ export class GeoJsonConverter implements PropertyConverter {
             throw new Error('Expected a valid GeoJSON location')
         }
 
-        return [value.coordinates[1], value.coordinates[0]]
+        return this.options.coordType === CoordinateType.LatLong
+            ? [value.coordinates[1], value.coordinates[0]]
+            : value.coordinates
     }
 }
