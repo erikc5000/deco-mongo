@@ -69,7 +69,7 @@ describe('property decorator', () => {
 
         it('should support custom property conversion', () => {
             class DogDocument {
-                @Property({ converter: { toDb: value => new ObjectID(), fromDb: value => value } })
+                @Property({ converter: { toDb: value => new ObjectID() } })
                 _id?: ObjectID
             }
 

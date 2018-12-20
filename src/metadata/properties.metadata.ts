@@ -22,11 +22,13 @@ export class PropertyMetadata {
     }
 
     mapValueToDb(value: any) {
-        return this.options.converter ? this.options.converter.toDb(value) : value
+        return this.options.converter && this.options.converter.toDb
+            ? this.options.converter.toDb(value)
+            : value
     }
 
     mapValueFromDb(mappedValue: any, targetType?: object) {
-        return this.options.converter
+        return this.options.converter && this.options.converter.fromDb
             ? this.options.converter.fromDb(mappedValue, targetType)
             : mappedValue
     }

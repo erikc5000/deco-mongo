@@ -33,8 +33,8 @@ export interface CollectionOptions {
 }
 
 export interface PropertyConverter {
-    toDb(value: any): any
-    fromDb(value: any, targetType?: object): any
+    toDb?(value: any): any
+    fromDb?(value: any, targetType?: object): any
 }
 
 export type TimestampType = 'create' | 'update'
