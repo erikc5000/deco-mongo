@@ -20,7 +20,7 @@ export interface MapperOptions {
 /**
  * Map objects between their in-memory and database representations.
  */
-export class Mapper<TInterface, TDocument extends object> {
+export class Mapper<TDocument extends object> {
     private readonly properties: PropertiesMetadata
 
     constructor(private readonly classType: ClassType<TDocument>, options: MapperOptions = {}) {
@@ -89,9 +89,9 @@ export class Mapper<TInterface, TDocument extends object> {
         return this.populateTimestampsForUpdate(updateOp, options && options.upsert)
     }
 
-    mapPartialToDb(object: Partial<TInterface>): any
-    mapPartialToDb(objects: Partial<TInterface>[]): any[]
-    mapPartialToDb(object: Partial<TInterface> | Partial<TInterface>[]): any {
+    mapPartialToDb(object: Partial<TDocument>): any
+    mapPartialToDb(objects: Partial<TDocument>[]): any[]
+    mapPartialToDb(object: Partial<TDocument> | Partial<TDocument>[]): any {
         if (Array.isArray(object)) {
             return object.map(element => this.mapPartialToDb(element))
         } else if (typeof object !== 'object') {
@@ -145,11 +145,11 @@ export class Mapper<TInterface, TDocument extends object> {
         return document
     }
 
-    mapPartialsFromDb(mappedObjects: any[]): Partial<TInterface>[] {
+    mapPartialsFromDb(mappedObjects: any[]): Partial<TDocument>[] {
         return mappedObjects.map(element => this.mapPartialFromDb(element))
     }
-    
-    mapPartialFromDb(mappedObject: any): Partial<TInterface> {
+
+    mapPartialFromDb(mappedObject: any): Partial<TDocument> {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
             return Mapper.unexpectedTypeError(mappedObject)
         }

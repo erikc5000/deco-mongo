@@ -6,7 +6,7 @@ import { ClassType } from '../interfaces'
  * Convert properties of a sub-document individually using a class that implements its interface
  */
 export class NestedPropertyConverter<T extends object> extends PropertyConverter {
-    private readonly mapper: Mapper<any, T>
+    private readonly mapper: Mapper<T>
 
     /**
      * Construct a new nested property converter
