@@ -1,5 +1,5 @@
 import { ClassType } from './interfaces'
-import { getPropertiesMetadata, PropertiesMetadata } from './metadata/properties.metadata'
+import { getPropertiesMetadata, PropertiesMetadata } from './internal/metadata/properties.metadata'
 import 'reflect-metadata'
 
 export interface MapForUpdateOptions {
@@ -22,10 +22,7 @@ export interface MapperOptions {
 export class Mapper<TInterface, TDocument extends object> {
     private readonly properties: PropertiesMetadata
 
-    constructor(
-        private readonly classType: ClassType<TDocument>,
-        private readonly options: MapperOptions = {}
-    ) {
+    constructor(private readonly classType: ClassType<TDocument>, options: MapperOptions = {}) {
         const properties = getPropertiesMetadata(this.classType)
 
         if (!properties) {
@@ -40,14 +37,12 @@ export class Mapper<TInterface, TDocument extends object> {
     mapForInsert(document: TDocument) {
         const mappedObject: any = {}
 
-        for (const property of this.properties.all()) {
-            if (!property.isTimestamp) {
-                const value = (document as any)[property.keyName]
-                const mappedValue = property.mapValueToDb(value)
+        for (const property of this.properties.withoutTimestamp()) {
+            const value = (document as any)[property.keyName]
+            const mappedValue = property.toDb(value)
 
-                if (mappedValue !== undefined) {
-                    mappedObject[property.mappedKeyName] = mappedValue
-                }
+            if (mappedValue !== undefined) {
+                mappedObject[property.mappedKeyName] = mappedValue
             }
         }
 
@@ -57,22 +52,20 @@ export class Mapper<TInterface, TDocument extends object> {
     mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation {
         const updateOp: UpdateOperation = {}
 
-        for (const property of this.properties.all()) {
+        for (const property of this.properties.withoutTimestamp()) {
             // Ignore any attempt to change the '_id' field
             if (property.mappedKeyName === '_id') {
                 continue
             }
 
-            if (!property.isTimestamp) {
-                const value = (document as any)[property.keyName]
+            const value = (document as any)[property.keyName]
 
-                if (typeof value === 'undefined') {
-                    if (updateOp.$unset == null) updateOp.$unset = {}
-                    updateOp.$unset[property.mappedKeyName] = ''
-                } else {
-                    if (updateOp.$set == null) updateOp.$set = {}
-                    updateOp.$set[property.mappedKeyName] = property.mapValueToDb(value)
-                }
+            if (value === undefined) {
+                if (updateOp.$unset == null) updateOp.$unset = {}
+                updateOp.$unset[property.mappedKeyName] = ''
+            } else {
+                if (updateOp.$set == null) updateOp.$set = {}
+                updateOp.$set[property.mappedKeyName] = property.toDb(value)
             }
         }
 
@@ -87,7 +80,7 @@ export class Mapper<TInterface, TDocument extends object> {
         for (const key in obj) {
             const property = properties.get(key)
             const value = obj[key]
-            mappedObject[property.mappedKeyName] = property.mapValueToDb(value)
+            mappedObject[property.mappedKeyName] = property.toDb(value)
         }
 
         return mappedObject
@@ -105,9 +98,9 @@ export class Mapper<TInterface, TDocument extends object> {
                     'design:type',
                     this.classType.prototype,
                     property.keyName
-                ) as object
+                )
 
-                const value = property.mapValueFromDb(mappedObject[mappedKey], designType)
+                const value = property.fromDb(mappedObject[mappedKey], designType)
 
                 if (value) {
                     ;(obj as any)[property.keyName] = value
@@ -133,7 +126,7 @@ export class Mapper<TInterface, TDocument extends object> {
                     property.keyName
                 )
 
-                const value = property.mapValueFromDb(mappedObject[mappedKey], designType)
+                const value = property.fromDb(mappedObject[mappedKey], designType)
                 obj[property.keyName] = value
             }
         }

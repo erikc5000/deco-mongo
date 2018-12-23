@@ -1,4 +1,4 @@
-import { PropertyConverter } from '../interfaces'
+import { PropertyConverter } from '../property-converter'
 
 interface GeoJsonLocation {
     coordinates: [number, number]
@@ -7,13 +7,13 @@ interface GeoJsonLocation {
 
 type Coordinates = [number, number]
 
-export enum CoordinateType {
-    LatLong = 'latLong',
-    LongLat = 'longLat'
+export const enum CoordType {
+    LatLong,
+    LongLat
 }
 
-export interface GeoJsonConverterOptions {
-    coordType: CoordinateType
+export interface GeoJsonPointConverterOptions {
+    coordType: CoordType
 }
 
 function isCoordinates(value: any): value is Coordinates {
@@ -33,10 +33,15 @@ function isGeoJsonLocation(value: any): value is GeoJsonLocation {
     )
 }
 
-export class GeoJsonConverter implements PropertyConverter {
+/**
+ * Convert a latitude/longitude or longitude/latitude array to a GeoJSON Point
+ */
+export class GeoJsonPointConverter extends PropertyConverter {
     constructor(
-        private readonly options: GeoJsonConverterOptions = { coordType: CoordinateType.LatLong }
-    ) {}
+        private readonly options: GeoJsonPointConverterOptions = { coordType: CoordType.LatLong }
+    ) {
+        super()
+    }
 
     toDb(value: any) {
         if (value == null) {
@@ -47,7 +52,7 @@ export class GeoJsonConverter implements PropertyConverter {
 
         const location: GeoJsonLocation = {
             coordinates:
-                this.options.coordType === CoordinateType.LatLong
+                this.options.coordType === CoordType.LatLong
                     ? [value[1], value[0]]
                     : [value[0], value[1]],
             type: 'Point'
@@ -56,15 +61,23 @@ export class GeoJsonConverter implements PropertyConverter {
         return location
     }
 
-    fromDb(value: any): Coordinates {
+    fromDb(value: any, targetType?: any): Coordinates {
         if (value == null) {
             return value
         } else if (!isGeoJsonLocation(value)) {
             throw new Error('Expected a valid GeoJSON location')
         }
 
-        return this.options.coordType === CoordinateType.LatLong
+        if (targetType !== Array) {
+            throw new Error(`Incompatible target type '${targetType}'`)
+        }
+
+        return this.options.coordType === CoordType.LatLong
             ? [value.coordinates[1], value.coordinates[0]]
             : value.coordinates
+    }
+
+    get supportedTypes() {
+        return [Array]
     }
 }

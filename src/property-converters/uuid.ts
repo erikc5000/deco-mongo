@@ -1,14 +1,14 @@
-import { PropertyConverter } from '../interfaces'
 import { Binary } from 'bson'
+import { PropertyConverter } from '../property-converter'
 
 function isBinary(value: any): value is Binary {
     return typeof value === 'object' && value.buffer && value.sub_type
 }
 
 /**
- * Convert a UUID in string form to a BSON Binary
+ * Convert a UUID in string or Buffer form into a BSON Binary object
  */
-export class UuidConverter implements PropertyConverter {
+export class UuidConverter extends PropertyConverter {
     toDb(value: any) {
         if (value == null) {
             return value
@@ -57,7 +57,6 @@ export class UuidConverter implements PropertyConverter {
             case Buffer:
                 return buffer
             case String:
-            case undefined:
                 return (
                     buffer.toString('hex', 0, 4) +
                     '-' +
@@ -72,5 +71,9 @@ export class UuidConverter implements PropertyConverter {
             default:
                 throw new Error(`Incompatible target type '${targetType}'`)
         }
+    }
+
+    get supportedTypes() {
+        return [Binary, Buffer, String]
     }
 }

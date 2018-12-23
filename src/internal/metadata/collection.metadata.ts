@@ -1,4 +1,4 @@
-import { CollectionOptions, ClassType } from '../interfaces'
+import { CollectionOptions, ClassType } from '../../interfaces'
 
 export const COLLECTION_KEY = Symbol('decoMongo:collection')
 

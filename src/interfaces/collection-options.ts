@@ -1,9 +1,5 @@
 import * as mongo from 'mongodb'
 
-export interface ClassType<T> {
-    new (...args: any[]): T
-}
-
 export type AutoApplyAction = 'always' | 'ifNewCollection' | 'never'
 
 /** JSON Schema options */
@@ -23,24 +19,11 @@ export interface JsonSchemaOptions {
      * applying a validator to the collection automatically, use 'never' -- you can still apply a
      * JSON schema manually.
      */
-    autoApply?: AutoApplyAction
+    when?: AutoApplyAction
 }
 
 export interface CollectionOptions {
     jsonSchema?: JsonSchemaOptions
     autoCreateIndexes?: AutoApplyAction
     mongoCreateOptions?: mongo.CollectionCreateOptions
-}
-
-export interface PropertyConverter {
-    toDb?(value: any): any
-    fromDb?(value: any, targetType?: object): any
-}
-
-export type TimestampType = 'create' | 'update'
-
-export interface PropertyOptions {
-    name?: string
-    converter?: PropertyConverter
-    timestamp?: TimestampType
 }

@@ -1,5 +1,5 @@
 import { CollectionOptions } from '../interfaces'
-import { CollectionMetadata, COLLECTION_KEY } from '../metadata/collection.metadata'
+import { CollectionMetadata, COLLECTION_KEY } from '../internal/metadata/collection.metadata'
 import 'reflect-metadata'
 
 /**
@@ -10,9 +10,9 @@ import 'reflect-metadata'
 export function Collection(name: string, options?: CollectionOptions) {
     return (target: any) => {
         if (Reflect.hasMetadata(COLLECTION_KEY, target)) {
-            throw new Error(`Found more than one @Collection() decorator on ${target}`)
+            throw new Error(`Found more than one @Collection() decorator on '${target}'`)
         }
-        
+
         const metadata: CollectionMetadata = { name, options }
         Reflect.defineMetadata(COLLECTION_KEY, metadata, target)
     }

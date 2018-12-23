@@ -88,16 +88,6 @@ describe('UUID converter', () => {
             })
         })
 
-        describe('with no target type', () => {
-            it('converts Binary values to string', () => {
-                const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-                const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
-                const fromDbValue = converter.fromDb(binary)
-
-                expect(fromDbValue).toBe('01020304-0506-0708-090a-0b0c0d0e0f10')
-            })
-        })
-
         describe('with String target type', () => {
             it('converts Binary values to string', () => {
                 const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
@@ -128,9 +118,10 @@ describe('UUID converter', () => {
         })
 
         describe('with unexpected target type', () => {
-            it('throws an exception', () => {
+            it('throws an exception when given a Binary value', () => {
                 const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
                 const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
+                expect(() => converter.fromDb(binary)).toThrow(Error)
                 expect(() => converter.fromDb(binary, Number)).toThrow(Error)
                 expect(() => converter.fromDb(binary, Function)).toThrow(Error)
                 expect(() => converter.fromDb(binary, Date)).toThrow(Error)

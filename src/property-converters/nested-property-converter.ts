@@ -1,17 +1,19 @@
-import { PropertyConverter, ClassType } from '../interfaces'
 import { Mapper } from '../mapper'
+import { PropertyConverter } from '../property-converter'
+import { ClassType } from '../interfaces'
 
 /**
- * Convert properties of a sub-document individually using a class derived from its interface
+ * Convert properties of a sub-document individually using a class that implements its interface
  */
-export class NestedPropertyConverter<T extends object> implements PropertyConverter {
+export class NestedPropertyConverter<T extends object> extends PropertyConverter {
     private readonly mapper: Mapper<any, T>
 
     /**
      * Construct a new nested property converter
      * @param classType The class to be used for conversion
      */
-    constructor(private readonly classType: ClassType<T>) {
+    constructor(classType: ClassType<T>) {
+        super()
         this.mapper = new Mapper(classType, { nested: true })
     }
 
@@ -25,7 +27,7 @@ export class NestedPropertyConverter<T extends object> implements PropertyConver
         return this.mapper.mapForInsert(value)
     }
 
-    fromDb(value: any) {
+    fromDb(value: any, targetType?: any) {
         if (value == null) {
             return value
         } else if (typeof value !== 'object') {

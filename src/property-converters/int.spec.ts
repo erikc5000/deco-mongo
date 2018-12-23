@@ -1,11 +1,11 @@
-import { DoubleConverter } from '.'
-import { Double } from 'bson'
+import { IntConverter } from './index'
+import { Int32 } from 'bson'
 
-describe('Double converter', () => {
-    let converter: DoubleConverter
+describe('Int32 converter', () => {
+    let converter: IntConverter
 
     beforeEach(() => {
-        converter = new DoubleConverter()
+        converter = new IntConverter()
     })
 
     describe('to DB', () => {
@@ -17,39 +17,39 @@ describe('Double converter', () => {
             expect(converter.toDb(null)).toBeNull()
         })
 
-        it('preserves Double values', () => {
-            const toDbValue = converter.toDb(new Double(5.0))
-            expect(toDbValue).toBeInstanceOf(Double)
-            expect(toDbValue.valueOf()).toEqual(5.0)
+        it('preserves Int32 values', () => {
+            const toDbValue = converter.toDb(new Int32(50))
+            expect(toDbValue).toBeInstanceOf(Int32)
+            expect(toDbValue.valueOf()).toEqual(50)
         })
 
         it('should convert zero number values', () => {
             const toDbValue = converter.toDb(0.0)
-            expect(toDbValue).toBeInstanceOf(Double)
+            expect(toDbValue).toBeInstanceOf(Int32)
             expect(toDbValue.valueOf()).toEqual(0.0)
         })
 
         it('should convert NaN number values', () => {
             const toDbValue = converter.toDb(NaN)
-            expect(toDbValue).toBeInstanceOf(Double)
+            expect(toDbValue).toBeInstanceOf(Int32)
             expect(toDbValue.valueOf()).toEqual(NaN)
         })
 
         it('should convert non-zero number values', () => {
             const toDbValue = converter.toDb(50)
-            expect(toDbValue).toBeInstanceOf(Double)
+            expect(toDbValue).toBeInstanceOf(Int32)
             expect(toDbValue.valueOf()).toEqual(50)
         })
 
         it('should convert number string values', () => {
             const toDbValue = converter.toDb('50')
-            expect(toDbValue).toBeInstanceOf(Double)
+            expect(toDbValue).toBeInstanceOf(Int32)
             expect(toDbValue.valueOf()).toEqual(50)
         })
 
         it('should convert non-number string values', () => {
             const toDbValue = converter.toDb('this is not a number')
-            expect(toDbValue).toBeInstanceOf(Double)
+            expect(toDbValue).toBeInstanceOf(Int32)
             expect(toDbValue.valueOf()).toEqual(NaN)
         })
 
@@ -71,17 +71,11 @@ describe('Double converter', () => {
             it('preserves null values', () => {
                 expect(converter.fromDb(null)).toBeNull()
             })
-
-            it('should fail to convert strings', () => {
-                expect(() => converter.fromDb('50.0')).toThrow(Error)
-                expect(() => converter.fromDb('50.0', Number)).toThrow(Error)
-                expect(() => converter.fromDb('50.0', Double)).toThrow(Error)
-            })
         })
 
         describe('with Number target type', () => {
-            it('should convert Double values', () => {
-                const fromDbValue = converter.fromDb(new Double(50.0), Number)
+            it('should convert Int32 values', () => {
+                const fromDbValue = converter.fromDb(new Int32(50.0), Number)
                 expect(typeof fromDbValue).toEqual('number')
                 expect(fromDbValue).toEqual(50.0)
             })
@@ -91,25 +85,29 @@ describe('Double converter', () => {
                 expect(typeof fromDbValue).toEqual('number')
                 expect(fromDbValue).toEqual(50.0)
             })
+
+            it('should fail to convert strings', () => {
+                expect(() => converter.fromDb('50.0', Number)).toThrow(Error)
+            })
         })
 
-        describe('with Double target type', () => {
-            it('should convert Double values', () => {
-                const fromDbValue = converter.fromDb(new Double(50.0), Double)
-                expect(fromDbValue).toBeInstanceOf(Double)
+        describe('with Int32 target type', () => {
+            it('should convert Int32 values', () => {
+                const fromDbValue = converter.fromDb(new Int32(50.0), Int32)
+                expect(fromDbValue).toBeInstanceOf(Int32)
                 expect(fromDbValue.valueOf()).toEqual(50.0)
             })
 
             it('should convert number values', () => {
-                const fromDbValue = converter.fromDb(50.0, Double)
-                expect(fromDbValue).toBeInstanceOf(Double)
+                const fromDbValue = converter.fromDb(50.0, Int32)
+                expect(fromDbValue).toBeInstanceOf(Int32)
                 expect(fromDbValue.valueOf()).toEqual(50.0)
             })
         })
 
         describe('with String target type', () => {
-            it('should convert Double values', () => {
-                const fromDbValue = converter.fromDb(new Double(50.0), String)
+            it('should convert Int32 values', () => {
+                const fromDbValue = converter.fromDb(new Int32(50.0), String)
                 expect(typeof fromDbValue).toEqual('string')
                 expect(fromDbValue).toEqual('50')
             })

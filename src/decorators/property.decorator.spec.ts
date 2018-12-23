@@ -1,10 +1,10 @@
-import {
-    getPropertiesMetadata,
-    PropertyMetadata,
-    PropertiesMetadata
-} from '../metadata/properties.metadata'
+import { getPropertiesMetadata, PropertiesMetadata } from '../internal/metadata/properties.metadata'
 import { Property } from './property.decorator'
 import { ObjectID } from 'bson'
+import { MappedProperty } from '../internal/mapped-property'
+import { CreationTimestamp } from './creation-timestamp.decorator'
+import { UpdateTimestamp } from './update-timestamp.decorator'
+import { PropertyConverter } from '../property-converter'
 
 describe('property decorator', () => {
     describe('class with decorated properties', () => {
@@ -19,15 +19,16 @@ describe('property decorator', () => {
         it('should have class-level properties metadata', () => {
             const properties = getPropertiesMetadata(BirdDocument)
             expect(properties).toBeInstanceOf(PropertiesMetadata)
-            expect(properties!.has('_id')).toBeTruthy()
-            expect(properties!.has('breed')).toBeTruthy()
+            expect(properties!.hasKey('_id')).toBeTruthy()
+            expect(properties!.hasKey('breed')).toBeTruthy()
             expect(properties!.hasMappedKey('_id')).toBeTruthy()
             expect(properties!.hasMappedKey('breed')).toBeTruthy()
             expect(properties!.withTimestamp()).toHaveLength(0)
             expect(properties!.withCreateTimestamp()).toHaveLength(0)
             expect(properties!.withUpdateTimestamp()).toHaveLength(0)
+            expect(properties!.withoutTimestamp()).toHaveLength(2)
 
-            let allProperties: PropertyMetadata[] = []
+            let allProperties: MappedProperty[] = []
             for (const property of properties!.all()) allProperties = allProperties.concat(property)
             expect(allProperties).toHaveLength(2)
         })
@@ -38,7 +39,7 @@ describe('property decorator', () => {
                 const properties = getPropertiesMetadata(BirdDocument)
 
                 const property = properties!.get(propertyName)
-                expect(property).toBeInstanceOf(PropertyMetadata)
+                expect(property).toBeInstanceOf(MappedProperty)
                 expect(property).toEqual(properties!.getFromMappedKey(propertyName))
                 expect(property.keyName).toBe(propertyName)
                 expect(property.mappedKeyName).toBe(propertyName)
@@ -55,19 +56,19 @@ describe('property decorator', () => {
             }
 
             const properties = getPropertiesMetadata(DogDocument)
-            expect(properties!.has('id')).toBeTruthy()
-            expect(properties!.has('_id')).toBeFalsy()
+            expect(properties!.hasKey('id')).toBeTruthy()
+            expect(properties!.hasKey('_id')).toBeFalsy()
             expect(properties!.hasMappedKey('id')).toBeFalsy()
             expect(properties!.hasMappedKey('_id')).toBeTruthy()
 
             const property = properties!.get('id')
-            expect(property).toBeInstanceOf(PropertyMetadata)
+            expect(property).toBeInstanceOf(MappedProperty)
             expect(property).toEqual(properties!.getFromMappedKey('_id'))
             expect(property.keyName).toBe('id')
             expect(property.mappedKeyName).toBe('_id')
         })
 
-        it('should support custom property conversion', () => {
+        it('should support inline property conversion', () => {
             class DogDocument {
                 @Property({ converter: { toDb: value => new ObjectID() } })
                 _id?: ObjectID
@@ -75,49 +76,27 @@ describe('property decorator', () => {
 
             const properties = getPropertiesMetadata(DogDocument)
             const property = properties!.get('_id')
-            const mappedValue = property.mapValueToDb(undefined)
+            const mappedValue = property.toDb(undefined)
             expect(mappedValue).toBeInstanceOf(ObjectID)
-            expect(property.mapValueFromDb(mappedValue)).toBeInstanceOf(ObjectID)
+            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectID)
         })
 
-        it('should support specifying creation timestamps', () => {
+        it('should support class-based property conversion', () => {
+            class TestPropertyConverter extends PropertyConverter {
+                toDb(value: any) {
+                    return new ObjectID()
+                }
+            }
             class DogDocument {
-                @Property()
+                @Property({ converter: new TestPropertyConverter() })
                 _id?: ObjectID
-
-                @Property({ timestamp: 'create' })
-                createdAt?: Date
             }
 
             const properties = getPropertiesMetadata(DogDocument)
-            expect(properties!.withCreateTimestamp()).toHaveLength(1)
-            expect(properties!.withUpdateTimestamp()).toHaveLength(0)
-            expect(properties!.withTimestamp()).toHaveLength(1)
-
-            const property = properties!.get('createdAt')
-            expect(property.isCreateTimestamp).toBeTruthy()
-            expect(property.isUpdateTimestamp).toBeFalsy()
-            expect(property.isTimestamp).toBeTruthy()
-        })
-
-        it('should support specifying update timestamps', () => {
-            class DogDocument {
-                @Property()
-                _id?: ObjectID
-
-                @Property({ timestamp: 'update' })
-                updatedAt?: Date
-            }
-
-            const properties = getPropertiesMetadata(DogDocument)
-            expect(properties!.withCreateTimestamp()).toHaveLength(0)
-            expect(properties!.withUpdateTimestamp()).toHaveLength(1)
-            expect(properties!.withTimestamp()).toHaveLength(1)
-
-            const property = properties!.get('updatedAt')
-            expect(property.isCreateTimestamp).toBeFalsy()
-            expect(property.isUpdateTimestamp).toBeTruthy()
-            expect(property.isTimestamp).toBeTruthy()
+            const property = properties!.get('_id')
+            const mappedValue = property.toDb(undefined)
+            expect(mappedValue).toBeInstanceOf(ObjectID)
+            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectID)
         })
 
         it(`throws an exception when accessing a property that doesn't exist`, () => {

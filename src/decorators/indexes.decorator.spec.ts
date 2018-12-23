@@ -1,4 +1,4 @@
-import { getIndexesMetadata } from '../metadata/indexes.metadata'
+import { getIndexesMetadata } from '../internal/metadata/indexes.metadata'
 import { Indexes } from './indexes.decorator'
 
 describe('indexes decorator', () => {
@@ -31,7 +31,7 @@ describe('indexes decorator', () => {
             class UndecoratedDogDocument {
                 breed?: string
             }
-    
+
             const metadata = getIndexesMetadata(UndecoratedDogDocument)
             expect(metadata).toBeUndefined()
         })

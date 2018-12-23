@@ -1,5 +1,5 @@
 import * as mongo from 'mongodb'
-import { INDEXES_KEY, getIndexesMetadata } from '../metadata/indexes.metadata'
+import { INDEXES_KEY, getIndexesMetadata } from '../internal/metadata/indexes.metadata'
 import 'reflect-metadata'
 
 /**
@@ -15,11 +15,11 @@ export function Indexes(...indexes: mongo.IndexSpecification[]) {
         if (indexes.length > 0) {
             const existingIndexes = getIndexesMetadata(target)
 
-            if (!existingIndexes) {
-                Reflect.defineMetadata(INDEXES_KEY, indexes, target)
-            } else {
-                Reflect.defineMetadata(INDEXES_KEY, [...existingIndexes, ...indexes], target)
-            }
+            Reflect.defineMetadata(
+                INDEXES_KEY,
+                existingIndexes ? [...existingIndexes, ...indexes] : indexes,
+                target
+            )
         }
     }
 }

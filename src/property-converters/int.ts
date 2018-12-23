@@ -1,18 +1,18 @@
-import { Double } from 'bson'
+import { Int32 } from 'bson'
 import { PropertyConverter } from '../property-converter'
 
 /**
- * Convert number values to the BSON Double represention
+ * Convert number values to BSON 32-bit integer represention
  */
-export class DoubleConverter extends PropertyConverter {
+export class IntConverter extends PropertyConverter {
     toDb(value: any) {
         if (value == null) {
             return value
         } else if (typeof value === 'number') {
-            return new Double(value)
+            return new Int32(value)
         } else if (typeof value === 'string') {
-            return new Double(parseFloat(value))
-        } else if (value instanceof Double) {
+            return new Int32(parseInt(value, 10))
+        } else if (value instanceof Int32) {
             return value
         } else {
             throw new Error('Expected a number or string')
@@ -22,18 +22,18 @@ export class DoubleConverter extends PropertyConverter {
     fromDb(value: any, targetType?: any) {
         if (value == null) {
             return value
-        } else if (typeof value !== 'number' && !(value instanceof Double)) {
-            throw new Error('Expected a number or Double object')
+        } else if (typeof value !== 'number' && !(value instanceof Int32)) {
+            throw new Error('Expected a number or Int32 object')
         }
 
         switch (targetType) {
             case Number:
                 return value.valueOf()
-            case Double:
-                if (value instanceof Double) {
+            case Int32:
+                if (value instanceof Int32) {
                     return value
                 } else {
-                    return new Double(value)
+                    return new Int32(value)
                 }
             case String:
                 return String(value.valueOf())
@@ -43,6 +43,6 @@ export class DoubleConverter extends PropertyConverter {
     }
 
     get supportedTypes() {
-        return [Number, Double, String]
+        return [Number, Int32, String]
     }
 }

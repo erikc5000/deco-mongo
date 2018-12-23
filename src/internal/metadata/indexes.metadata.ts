@@ -1,4 +1,4 @@
-import { ClassType } from '../interfaces'
+import { ClassType } from '../../interfaces'
 import * as mongo from 'mongodb'
 
 export const INDEXES_KEY = Symbol('decoMongo:indexes')

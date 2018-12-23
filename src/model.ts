@@ -1,7 +1,7 @@
 import * as mongo from 'mongodb'
-import { collectionExists, isIndexOptionsConflictError } from './mongo-util'
-import { getCollectionMetadata } from './metadata/collection.metadata'
-import { getIndexesMetadata } from './metadata/indexes.metadata'
+import { collectionExists, isIndexOptionsConflictError } from './internal/mongo-util'
+import { getCollectionMetadata } from './internal/metadata/collection.metadata'
+import { getIndexesMetadata } from './internal/metadata/indexes.metadata'
 import { ClassType, CollectionOptions } from './interfaces'
 import { Mapper, MapForUpdateOptions, UpdateOperation } from './mapper'
 
@@ -26,7 +26,7 @@ export class Model<TInterface, TDocument extends object> {
         if (collExists) {
             collection = db.collection(name)
 
-            if (options && options.jsonSchema && options.jsonSchema.autoApply === 'always') {
+            if (options && options.jsonSchema && options.jsonSchema.when === 'always') {
                 const validator = options.jsonSchema.use
                     ? { $jsonSchema: options.jsonSchema.use }
                     : {}
@@ -114,7 +114,7 @@ export class Model<TInterface, TDocument extends object> {
 
             if (
                 options.jsonSchema &&
-                options.jsonSchema.autoApply !== 'never' &&
+                options.jsonSchema.when !== 'never' &&
                 options.jsonSchema.use
             ) {
                 createOptions.validator = { $jsonSchema: options.jsonSchema.use }

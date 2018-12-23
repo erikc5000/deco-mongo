@@ -1,4 +1,4 @@
-import { getCollectionMetadata } from '../metadata/collection.metadata'
+import { getCollectionMetadata } from '../internal/metadata/collection.metadata'
 import { Collection } from './collection.decorator'
 
 describe('collection decorator', () => {
