@@ -1,5 +1,5 @@
-import { Binary, ObjectID } from 'bson'
-import { ObjectIdConverter } from './object-id';
+import { ObjectID } from 'bson'
+import { ObjectIdConverter } from './object-id'
 
 describe('ObjectID converter', () => {
     let converter: ObjectIdConverter
@@ -18,7 +18,7 @@ describe('ObjectID converter', () => {
         })
 
         it('preserves ObjectID values', () => {
-            const objectId = new ObjectID
+            const objectId = new ObjectID()
             const toDbValue = converter.toDb(objectId)
             expect(toDbValue).toBeInstanceOf(ObjectID)
             expect((toDbValue as ObjectID).equals(objectId)).toBeTruthy()

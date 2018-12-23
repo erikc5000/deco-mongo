@@ -2,8 +2,6 @@ import { getPropertiesMetadata, PropertiesMetadata } from '../internal/metadata/
 import { Property } from './property.decorator'
 import { ObjectID } from 'bson'
 import { MappedProperty } from '../internal/mapped-property'
-import { CreationTimestamp } from './creation-timestamp.decorator'
-import { UpdateTimestamp } from './update-timestamp.decorator'
 import { PropertyConverter } from '../property-converter'
 
 describe('property decorator', () => {
