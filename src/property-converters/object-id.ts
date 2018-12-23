@@ -1,17 +1,26 @@
 import { ObjectID } from 'bson'
 import { PropertyConverter } from '../property-converter'
 
-// function isObjectID(value: any): value is ObjectID {
-//     return typeof value === 'object' && value.toHexString
-// }
+export interface ObjectIdConverterOptions {
+    /** Generate a new ObjectID when converting an empty value to the database. */
+    autoGenerate?: boolean
+}
 
 /**
  * Convert a valid MongoDB object ID into an ObjectID object
  */
 export class ObjectIdConverter extends PropertyConverter {
+    constructor(private readonly options?: ObjectIdConverterOptions) {
+        super()
+    }
+
     toDb(value: any) {
         if (value == null) {
-            return value
+            if (this.options && this.options.autoGenerate) {
+                return new ObjectID()
+            } else {
+                return value
+            }
         } else if (typeof value === 'string') {
             return new ObjectID(value)
         } else if (value instanceof ObjectID) {
