@@ -1,5 +1,5 @@
 export * from './decorators'
-export * from './model'
+export * from './repository'
 export * from './interfaces'
 export * from './property-converter'
 export * from './property-converters'

@@ -1,6 +1,7 @@
 import { ClassType } from './interfaces'
 import { getPropertiesMetadata, PropertiesMetadata } from './internal/metadata/properties.metadata'
 import 'reflect-metadata'
+import { MappedProperty } from './internal/mapped-property'
 
 export interface MapForUpdateOptions {
     upsert?: boolean
@@ -34,7 +35,15 @@ export class Mapper<TInterface, TDocument extends object> {
         this.properties = properties
     }
 
-    mapForInsert(document: TDocument) {
+    mapForInsert(document: TDocument): any
+    mapForInsert(documents: TDocument[]): any[]
+    mapForInsert(document: TDocument | TDocument[]): any {
+        if (Array.isArray(document)) {
+            return document.map(element => this.mapForInsert(element))
+        } else if (!(document instanceof this.classType)) {
+            return Mapper.unexpectedTypeError(document)
+        }
+
         const mappedObject: any = {}
 
         for (const property of this.properties.withoutTimestamp()) {
@@ -49,7 +58,15 @@ export class Mapper<TInterface, TDocument extends object> {
         return this.populateTimestampsForInsert(mappedObject)
     }
 
-    mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation {
+    mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation
+    mapForUpdate(documents: TDocument[], options?: MapForUpdateOptions): UpdateOperation[]
+    mapForUpdate(document: TDocument | TDocument[], options?: MapForUpdateOptions): any {
+        if (Array.isArray(document)) {
+            return document.map(element => this.mapForUpdate(element), options)
+        } else if (!(document instanceof this.classType)) {
+            return Mapper.unexpectedTypeError(document)
+        }
+
         const updateOp: UpdateOperation = {}
 
         for (const property of this.properties.withoutTimestamp()) {
@@ -72,25 +89,42 @@ export class Mapper<TInterface, TDocument extends object> {
         return this.populateTimestampsForUpdate(updateOp, options && options.upsert)
     }
 
-    mapPartialToDb(obj: Partial<TInterface>) {
+    mapPartialToDb(object: Partial<TInterface>): any
+    mapPartialToDb(objects: Partial<TInterface>[]): any[]
+    mapPartialToDb(object: Partial<TInterface> | Partial<TInterface>[]): any {
+        if (Array.isArray(object)) {
+            return object.map(element => this.mapPartialToDb(element))
+        } else if (typeof object !== 'object') {
+            return Mapper.unexpectedTypeError(object)
+        }
+
         const properties = this.properties
         const mappedObject: any = {}
 
         // tslint:disable-next-line:forin
-        for (const key in obj) {
-            const property = properties.get(key)
-            const value = obj[key]
-            mappedObject[property.mappedKeyName] = property.toDb(value)
+        for (const key in object) {
+            if (properties.hasKey(key)) {
+                const property = properties.get(key)
+                const value = object[key]
+                mappedObject[property.mappedKeyName] = property.toDb(value)
+            }
         }
 
         return mappedObject
     }
 
-    mapFromResult(mappedObject: any): TDocument {
-        const properties = this.properties
-        const obj = new this.classType()
+    mapFromResults(mappedObjects: any[]): TDocument[] {
+        return mappedObjects.map(element => this.mapFromResult(element))
+    }
 
-        for (const property of properties.all()) {
+    mapFromResult(mappedObject: any): TDocument {
+        if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
+            return Mapper.unexpectedTypeError(mappedObject)
+        }
+
+        const document = new this.classType()
+
+        for (const property of this.properties.all()) {
             const mappedKey = property.mappedKeyName
 
             if (mappedKey in mappedObject) {
@@ -103,17 +137,25 @@ export class Mapper<TInterface, TDocument extends object> {
                 const value = property.fromDb(mappedObject[mappedKey], designType)
 
                 if (value) {
-                    ;(obj as any)[property.keyName] = value
+                    ;(document as any)[property.keyName] = value
                 }
             }
         }
 
-        return obj
+        return document
     }
 
+    mapPartialsFromDb(mappedObjects: any[]): Partial<TInterface>[] {
+        return mappedObjects.map(element => this.mapPartialFromDb(element))
+    }
+    
     mapPartialFromDb(mappedObject: any): Partial<TInterface> {
+        if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
+            return Mapper.unexpectedTypeError(mappedObject)
+        }
+
         const properties = this.properties
-        const obj: any = {}
+        const object: any = {}
 
         // tslint:disable-next-line:forin
         for (const mappedKey in mappedObject) {
@@ -127,29 +169,25 @@ export class Mapper<TInterface, TDocument extends object> {
                 )
 
                 const value = property.fromDb(mappedObject[mappedKey], designType)
-                obj[property.keyName] = value
+                object[property.keyName] = value
             }
         }
 
-        return obj
+        return object
     }
 
-    mapManyFromDb(objects: any[]): TDocument[] {
-        return objects.map(obj => this.mapFromResult(obj))
-    }
-
-    private populateTimestampsForInsert(obj: any) {
+    private populateTimestampsForInsert(mappedObject: any) {
         const timestampProperties = this.properties.withTimestamp()
 
-        if (timestampProperties.length) {
+        if (timestampProperties.length > 0) {
             const timestamp = new Date()
 
             for (const property of timestampProperties) {
-                obj[property.mappedKeyName] = timestamp
+                mappedObject[property.mappedKeyName] = timestamp
             }
         }
 
-        return obj
+        return mappedObject
     }
 
     private populateTimestampsForUpdate(updateOp: UpdateOperation, upsert?: boolean) {
@@ -157,7 +195,7 @@ export class Mapper<TInterface, TDocument extends object> {
             ? this.properties.withTimestamp()
             : this.properties.withUpdateTimestamp()
 
-        if (timestampProperties.length) {
+        if (timestampProperties.length > 0) {
             const timestamp = new Date()
 
             for (const property of timestampProperties) {
@@ -174,5 +212,9 @@ export class Mapper<TInterface, TDocument extends object> {
         }
 
         return updateOp
+    }
+
+    private static unexpectedTypeError(object: any): never {
+        throw new Error(`Mapping object of unexpected type '${typeof object}'`)
     }
 }
