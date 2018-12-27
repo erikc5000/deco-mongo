@@ -1,4 +1,4 @@
-import { IPropertyConverter } from './interfaces/index'
+import { IPropertyConverter } from './interfaces'
 
 /**
  * Transforms the value of a property when storing and retrieving data from a database.
@@ -9,9 +9,7 @@ export abstract class PropertyConverter implements IPropertyConverter {
      * If not defined, the original value will be preserved.
      * @param value The value to be mapped
      */
-    toDb(value: any): any {
-        return value
-    }
+    abstract toDb(value: any): any
 
     /**
      * Populate the value of a class property based on the value retrieved from the database.  If
@@ -19,16 +17,14 @@ export abstract class PropertyConverter implements IPropertyConverter {
      * @param value The value to be mapped
      * @param targetType The type expected by the class's property
      */
-    fromDb(value: any, targetType?: any): any {
-        return value
+    abstract fromDb(value: any, targetType?: any): any
+
+    supportsType(type: any): boolean {
+        const supportedTypes = this.supportedTypes
+        return supportedTypes.length === 0 || type in supportedTypes
     }
 
     get supportedTypes(): any[] {
         return []
     }
 }
-
-/**
- * The default property converter, which keeps the same value when going to and from the database.
- */
-export class DefaultPropertyConverter extends PropertyConverter {}

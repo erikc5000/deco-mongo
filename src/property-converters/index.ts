@@ -1,3 +1,4 @@
+export * from './default-property-converter'
 export * from './double'
 export * from './geo-json-point'
 export * from './int'

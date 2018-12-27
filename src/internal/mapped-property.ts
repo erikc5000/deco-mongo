@@ -1,6 +1,7 @@
 import { PropertyOptions, TimestampType } from '../interfaces'
-import { PropertyConverter, DefaultPropertyConverter } from '../property-converter'
+import { PropertyConverter } from '../property-converter'
 import { CustomPropertyConverter } from './custom-property-converter'
+import { DefaultPropertyConverter } from '../property-converters'
 
 export class MappedProperty {
     readonly mappedKeyName: string

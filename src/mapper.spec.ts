@@ -1,5 +1,5 @@
 import { Mapper } from './mapper'
-import { Property, CreationTimestamp, UpdateTimestamp } from './decorators/index'
+import { Property, CreationTimestamp, UpdateTimestamp, IntProperty } from './decorators/index'
 import { ObjectIdProperty } from './decorators/object-id-property.decorator'
 import { ObjectID } from 'bson'
 
@@ -299,6 +299,59 @@ describe('mapper', () => {
                 expect(mappedDocs[1].$unset).toBeUndefined()
                 expect(mappedDocs[1].$setOnInsert).toBeUndefined()
             })
+        })
+    })
+
+    describe('map from result', () => {
+        const objectId = new ObjectID()
+        const modifiedDate = new Date()
+
+        class CatDocument {
+            @ObjectIdProperty({ name: '_id' })
+            id: string = objectId.toHexString()
+
+            @Property({ name: 'catName' })
+            name: string = 'I have a name'
+
+            @Property()
+            color: string = 'black'
+
+            @IntProperty()
+            age?: number | null
+
+            @Property()
+            likesPizza?: boolean
+
+            @UpdateTimestamp()
+            lastModified?: Date
+        }
+
+        let mapper: Mapper<CatDocument>
+
+        beforeEach(() => {
+            mapper = new Mapper(CatDocument)
+        })
+
+        it('maps valid documents', () => {
+            mapper = new Mapper(CatDocument)
+            const result = {
+                _id: objectId,
+                catName: 'I have another name',
+                age: null,
+                likesPizza: false,
+                lastModified: modifiedDate
+            }
+            const mappedDoc = mapper.mapFromResult(result)
+
+            const expected = new CatDocument()
+            expected.id = objectId.toHexString()
+            expected.name = 'I have another name'
+            expected.age = null
+            expected.color = 'black'
+            expected.likesPizza = false
+            expected.lastModified = modifiedDate
+
+            expect(mappedDoc).toStrictEqual(expected)
         })
     })
 })

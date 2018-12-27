@@ -2,10 +2,28 @@ import { BasicPropertyOptions } from '../interfaces'
 import { Property } from './property.decorator'
 import { ObjectIdConverter, ObjectIdConverterOptions } from '../property-converters'
 
+export interface ObjectIdPropertyOptions extends BasicPropertyOptions, ObjectIdConverterOptions {}
+
+// Converter pool
 const objectIdConverter = new ObjectIdConverter()
 const autoGenObjectIdConverter = new ObjectIdConverter({ autoGenerate: true })
 
-export interface ObjectIdPropertyOptions extends BasicPropertyOptions, ObjectIdConverterOptions {}
+/** Get an ObjectID converter from the pool, if possible.  Otherwise, create one. */
+function getConverter(options?: ObjectIdPropertyOptions) {
+    if (options) {
+        switch (options.autoGenerate) {
+            case undefined:
+            case false:
+                return objectIdConverter
+            case true:
+                return autoGenObjectIdConverter
+            default:
+                return new ObjectIdConverter({ autoGenerate: options.autoGenerate })
+        }
+    } else {
+        return objectIdConverter
+    }
+}
 
 /**
  * A Mongo ObjectID property
@@ -13,7 +31,7 @@ export interface ObjectIdPropertyOptions extends BasicPropertyOptions, ObjectIdC
  */
 export function ObjectIdProperty(options?: ObjectIdPropertyOptions) {
     return Property({
-        converter: options && options.autoGenerate ? autoGenObjectIdConverter : objectIdConverter,
+        converter: getConverter(options),
         ...options
     })
 }

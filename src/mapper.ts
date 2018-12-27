@@ -136,8 +136,9 @@ export class Mapper<TDocument extends object> {
 
                 const value = property.fromDb(mappedObject[mappedKey], designType)
 
-                if (value) {
-                    ;(document as any)[property.keyName] = value
+                if (value !== undefined) {
+                    const anyDoc = document as any
+                    anyDoc[property.keyName] = value
                 }
             }
         }

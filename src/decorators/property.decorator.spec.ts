@@ -84,6 +84,10 @@ describe('property decorator', () => {
                 toDb(value: any) {
                     return new ObjectID()
                 }
+
+                fromDb(value: any, targetType?: any) {
+                    return value
+                }
             }
             class DogDocument {
                 @Property({ converter: new TestPropertyConverter() })

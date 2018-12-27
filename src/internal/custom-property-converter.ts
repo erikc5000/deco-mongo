@@ -1,6 +1,10 @@
 import { PropertyConverter } from '../property-converter'
 import { IPropertyConverter } from '../interfaces'
 
+/**
+ * A custom property converter is automatically instantiated whenever a non-class converter is
+ * used, providing default behavior whenever toDb() or fromDb() are not explicitly specified.
+ */
 export class CustomPropertyConverter extends PropertyConverter {
     constructor(private readonly converter: IPropertyConverter) {
         super()
@@ -11,7 +15,7 @@ export class CustomPropertyConverter extends PropertyConverter {
             return this.converter.toDb(value)
         }
 
-        return super.toDb(value)
+        return value
     }
 
     fromDb(value: any, targetType?: any): any {
@@ -19,6 +23,6 @@ export class CustomPropertyConverter extends PropertyConverter {
             return this.converter.fromDb(value, targetType)
         }
 
-        return super.fromDb(value, targetType)
+        return value
     }
 }

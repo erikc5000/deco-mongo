@@ -3,36 +3,43 @@ import { PropertyConverter } from '../property-converter'
 
 export interface ObjectIdConverterOptions {
     /** Generate a new ObjectID when converting an empty value to the database. */
-    autoGenerate?: boolean
+    autoGenerate?: (() => ObjectID) | boolean
 }
 
 /**
  * Convert a valid MongoDB object ID into an ObjectID object
  */
 export class ObjectIdConverter extends PropertyConverter {
-    constructor(private readonly options?: ObjectIdConverterOptions) {
+    constructor(private readonly options: ObjectIdConverterOptions = {}) {
         super()
     }
 
     toDb(value: any) {
-        if (value == null) {
-            if (this.options && this.options.autoGenerate) {
-                return new ObjectID()
-            } else {
-                return value
-            }
-        } else if (typeof value === 'string') {
-            return new ObjectID(value)
-        } else if (value instanceof ObjectID) {
-            return value
-        } else {
-            throw new Error('Expected a string or ObjectID')
+        switch (typeof value) {
+            case 'undefined':
+                return this.shouldAutoGenerate ? this.autoGenerate() : undefined
+
+            case 'string':
+                if (value.length === 0 && this.shouldAutoGenerate) {
+                    return this.autoGenerate()
+                }
+
+                return ObjectID.createFromHexString(value)
+
+            case 'object':
+                if (value instanceof ObjectID) {
+                    return value
+                }
+
+                break
         }
+
+        throw new Error('Expected a string or ObjectID')
     }
 
     fromDb(value: any, targetType?: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (!(value instanceof ObjectID)) {
             throw new Error('Expected an ObjectID object')
         }
@@ -43,11 +50,23 @@ export class ObjectIdConverter extends PropertyConverter {
             case String:
                 return value.toHexString()
             default:
-                throw new Error('Incompatible target type')
+                throw new Error(`Incompatible target type '${targetType}'`)
         }
     }
 
     get supportedTypes() {
         return [String, ObjectID]
+    }
+
+    private get shouldAutoGenerate() {
+        return this.options.autoGenerate ? true : false
+    }
+
+    private autoGenerate() {
+        if (typeof this.options.autoGenerate === 'function') {
+            return this.options.autoGenerate()
+        } else {
+            return new ObjectID()
+        }
     }
 }
