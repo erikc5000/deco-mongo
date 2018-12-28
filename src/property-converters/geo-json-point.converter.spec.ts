@@ -1,5 +1,5 @@
 import { GeoJsonPointConverter } from './index'
-import { CoordType } from './geo-json-point'
+import { CoordType } from './geo-json-point.converter'
 
 describe('GeoJSON point converter', () => {
     describe('to DB', () => {

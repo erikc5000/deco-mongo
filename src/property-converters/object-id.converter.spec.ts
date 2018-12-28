@@ -1,6 +1,5 @@
 import { ObjectID } from 'bson'
-import { ObjectIdConverter } from './object-id'
-import { MongoError } from 'mongodb'
+import { ObjectIdConverter } from './object-id.converter'
 
 describe('ObjectID converter', () => {
     describe('to DB', () => {

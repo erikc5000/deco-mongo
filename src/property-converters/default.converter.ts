@@ -6,7 +6,7 @@ import { PropertyConverter } from '../property-converter'
  * values that would violate the expectations of the class.  By design, there is no implicit
  * conversion -- a custom converter must be used to deal with incompatible types.
  */
-export class DefaultPropertyConverter extends PropertyConverter {
+export class DefaultConverter extends PropertyConverter {
     toDb(value: any) {
         return value
     }

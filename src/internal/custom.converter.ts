@@ -1,11 +1,11 @@
 import { PropertyConverter } from '../property-converter'
-import { IPropertyConverter } from '../interfaces'
+import { IPropertyConverter } from '../interfaces/index'
 
 /**
  * A custom property converter is automatically instantiated whenever a non-class converter is
  * used, providing default behavior whenever toDb() or fromDb() are not explicitly specified.
  */
-export class CustomPropertyConverter extends PropertyConverter {
+export class CustomConverter extends PropertyConverter {
     constructor(private readonly converter: IPropertyConverter) {
         super()
     }
