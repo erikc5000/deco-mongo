@@ -6,8 +6,8 @@ import { PropertyConverter } from '../property-converter'
  */
 export class IntConverter extends PropertyConverter {
     toDb(value: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (typeof value === 'number') {
             return new Int32(value)
         } else if (typeof value === 'string') {
@@ -20,8 +20,8 @@ export class IntConverter extends PropertyConverter {
     }
 
     fromDb(value: any, targetType?: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (typeof value !== 'number' && !(value instanceof Int32)) {
             throw new Error('Expected a number or Int32 object')
         }
@@ -42,7 +42,7 @@ export class IntConverter extends PropertyConverter {
         }
     }
 
-    get supportedTypes() {
+    getSupportedTypes() {
         return [Number, Int32, String]
     }
 }

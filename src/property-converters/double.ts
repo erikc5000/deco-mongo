@@ -6,22 +6,26 @@ import { PropertyConverter } from '../property-converter'
  */
 export class DoubleConverter extends PropertyConverter {
     toDb(value: any) {
-        if (value == null) {
-            return value
-        } else if (typeof value === 'number') {
-            return new Double(value)
-        } else if (typeof value === 'string') {
-            return new Double(parseFloat(value))
-        } else if (value instanceof Double) {
-            return value
-        } else {
-            throw new Error('Expected a number or string')
+        switch (typeof value) {
+            case 'undefined':
+                return undefined
+            case 'number':
+                return new Double(value)
+            case 'string':
+                return new Double(parseFloat(value))
+            case 'object':
+                if (value instanceof Double) {
+                    return value
+                }
+                break
         }
+
+        throw new Error('Expected a number or string')
     }
 
     fromDb(value: any, targetType?: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (typeof value !== 'number' && !(value instanceof Double)) {
             throw new Error('Expected a number or Double object')
         }
@@ -42,7 +46,7 @@ export class DoubleConverter extends PropertyConverter {
         }
     }
 
-    get supportedTypes() {
+    getSupportedTypes() {
         return [Number, Double, String]
     }
 }

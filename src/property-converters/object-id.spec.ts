@@ -47,10 +47,10 @@ describe('ObjectID converter', () => {
         })
 
         describe.each([
-            [new ObjectIdConverter()],
-            [new ObjectIdConverter({ autoGenerate: true })],
-            [new ObjectIdConverter({ autoGenerate: () => new ObjectID() })]
-        ])('with any auto-generate setting', (converter: ObjectIdConverter) => {
+            new ObjectIdConverter(),
+            new ObjectIdConverter({ autoGenerate: true }),
+            new ObjectIdConverter({ autoGenerate: () => new ObjectID() })
+        ])('with any auto-generate setting (%#)', (converter: ObjectIdConverter) => {
             it('preserves ObjectID values', () => {
                 const objectId = new ObjectID('5c1f09b080d1cb26dcbb4c9e')
                 const toDbValue = converter.toDb(objectId)
@@ -80,10 +80,10 @@ describe('ObjectID converter', () => {
     })
 
     describe.each([
-        [new ObjectIdConverter()],
-        [new ObjectIdConverter({ autoGenerate: true })],
-        [new ObjectIdConverter({ autoGenerate: () => new ObjectID() })]
-    ])('from DB', (converter: ObjectIdConverter) => {
+        new ObjectIdConverter(),
+        new ObjectIdConverter({ autoGenerate: true }),
+        new ObjectIdConverter({ autoGenerate: () => new ObjectID() })
+    ])('from DB (%#)', (converter: ObjectIdConverter) => {
         describe('with any target type', () => {
             it('preserves undefined values', () => {
                 expect(converter.fromDb(undefined)).toBeUndefined()
@@ -121,15 +121,14 @@ describe('ObjectID converter', () => {
             })
         })
 
-        describe('with unexpected target type', () => {
-            it('throws an exception when given an ObjectID value', () => {
-                const objectId = new ObjectID()
-                expect(() => converter.fromDb(objectId)).toThrow(Error)
-                expect(() => converter.fromDb(objectId, Object)).toThrow(Error)
-                expect(() => converter.fromDb(objectId, Number)).toThrow(Error)
-                expect(() => converter.fromDb(objectId, Function)).toThrow(Error)
-                expect(() => converter.fromDb(objectId, Date)).toThrow(Error)
-            })
-        })
+        describe.each([undefined, Object, Number, Function, Date])(
+            'with unexpected target type (%p)',
+            targetType => {
+                it('throws an exception when given an ObjectID value', () => {
+                    const objectId = new ObjectID()
+                    expect(() => converter.fromDb(objectId, targetType)).toThrow(Error)
+                })
+            }
+        )
     })
 })

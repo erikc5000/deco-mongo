@@ -3,9 +3,12 @@ import { Binary } from 'bson'
 import uuid = require('uuid')
 
 describe('UUID converter', () => {
+    const sequentialBuffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    const tooBigBuffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17)
+
     describe('to DB', () => {
-        describe.each([[new UuidConverter()], [new UuidConverter({ autoGenerate: false })]])(
-            'when auto-generate is disabled',
+        describe.each([new UuidConverter(), new UuidConverter({ autoGenerate: false })])(
+            'when auto-generate is disabled (%#)',
             (converter: UuidConverter) => {
                 it('preserves undefined values', () => {
                     expect(converter.toDb(undefined)).toBeUndefined()
@@ -18,10 +21,10 @@ describe('UUID converter', () => {
         )
 
         describe.each([
-            [new UuidConverter({ autoGenerate: 'v1' })],
-            [new UuidConverter({ autoGenerate: 'v4' })],
-            [new UuidConverter({ autoGenerate: () => uuid.v4() })]
-        ])('when auto-generate is enabled', (converter: UuidConverter) => {
+            new UuidConverter({ autoGenerate: 'v1' }),
+            new UuidConverter({ autoGenerate: 'v4' }),
+            new UuidConverter({ autoGenerate: () => uuid.v4() })
+        ])('when auto-generate is enabled (%#)', (converter: UuidConverter) => {
             it('generates a valid UUID when given an undefined value', () => {
                 const toDbValue = converter.toDb(undefined)
                 expect(toDbValue).toBeInstanceOf(Binary)
@@ -38,20 +41,20 @@ describe('UUID converter', () => {
         })
 
         describe.each([
-            [new UuidConverter()],
-            [new UuidConverter({ autoGenerate: false })],
-            [new UuidConverter({ autoGenerate: 'v1' })],
-            [new UuidConverter({ autoGenerate: 'v4' })],
-            [new UuidConverter({ autoGenerate: () => uuid.v4() })]
-        ])('with any auto-generate setting', (converter: UuidConverter) => {
+            new UuidConverter(),
+            new UuidConverter({ autoGenerate: false }),
+            new UuidConverter({ autoGenerate: 'v1' }),
+            new UuidConverter({ autoGenerate: 'v4' }),
+            new UuidConverter({ autoGenerate: () => uuid.v4() })
+        ])('with any auto-generate setting (%#)', (converter: UuidConverter) => {
             it('preserves UUID Binary values', () => {
-                const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                const buffer = sequentialBuffer
                 const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
                 expect(converter.toDb(binary)).toEqual(binary)
             })
 
             it('throws an exception when given a non-UUID Binary value', () => {
-                const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                const buffer = sequentialBuffer
                 const binary = new Binary(buffer, Binary.SUBTYPE_BYTE_ARRAY)
                 expect(() => converter.toDb(binary)).toThrow(Error)
             })
@@ -66,7 +69,7 @@ describe('UUID converter', () => {
             })
 
             it('converts Buffer UUIDs', () => {
-                const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                const buffer = sequentialBuffer
                 const toDbValue = converter.toDb(buffer)
                 expect(toDbValue).toBeInstanceOf(Binary)
 
@@ -91,11 +94,11 @@ describe('UUID converter', () => {
 
     describe('from DB', () => {
         describe.each([
-            [new UuidConverter()],
-            [new UuidConverter({ autoGenerate: 'v1' })],
-            [new UuidConverter({ autoGenerate: 'v4' })],
-            [new UuidConverter({ autoGenerate: () => uuid.v4() })]
-        ])('with any auto-generate setting', (converter: UuidConverter) => {
+            new UuidConverter(),
+            new UuidConverter({ autoGenerate: 'v1' }),
+            new UuidConverter({ autoGenerate: 'v4' }),
+            new UuidConverter({ autoGenerate: () => uuid.v4() })
+        ])('with any auto-generate setting (%#)', (converter: UuidConverter) => {
             describe('with any target type', () => {
                 it('preserves undefined values', () => {
                     expect(converter.fromDb(undefined)).toBeUndefined()
@@ -114,31 +117,13 @@ describe('UUID converter', () => {
                 })
 
                 it('throws an exception if the Binary has an unexpected buffer size', () => {
-                    const buffer = Buffer.of(
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        14,
-                        15,
-                        16,
-                        17
-                    )
+                    const buffer = tooBigBuffer
                     const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
                     expect(() => converter.fromDb(binary)).toThrow(Error)
                 })
 
                 it('throws an exception when given a non-UUID Binary', () => {
-                    const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                    const buffer = sequentialBuffer
                     const binary = new Binary(buffer, Binary.SUBTYPE_FUNCTION)
                     expect(() => converter.fromDb(binary)).toThrow(Error)
                 })
@@ -146,7 +131,7 @@ describe('UUID converter', () => {
 
             describe('with String target type', () => {
                 it('converts Binary values to string', () => {
-                    const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                    const buffer = sequentialBuffer
                     const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
                     const fromDbValue = converter.fromDb(binary, String)
 
@@ -156,7 +141,7 @@ describe('UUID converter', () => {
 
             describe('with Binary target type', () => {
                 it('preserves UUID Binary values', () => {
-                    const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                    const buffer = sequentialBuffer
                     const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
                     expect(converter.fromDb(binary, Binary)).toEqual(binary)
                 })
@@ -164,7 +149,7 @@ describe('UUID converter', () => {
 
             describe('with Buffer target type', () => {
                 it('converts Binary values to Buffer', () => {
-                    const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+                    const buffer = sequentialBuffer
                     const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
                     const fromDbValue = converter.fromDb(binary, Buffer)
 
@@ -173,16 +158,16 @@ describe('UUID converter', () => {
                 })
             })
 
-            describe('with unexpected target type', () => {
-                it('throws an exception when given a Binary value', () => {
-                    const buffer = Buffer.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-                    const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
-                    expect(() => converter.fromDb(binary)).toThrow(Error)
-                    expect(() => converter.fromDb(binary, Number)).toThrow(Error)
-                    expect(() => converter.fromDb(binary, Function)).toThrow(Error)
-                    expect(() => converter.fromDb(binary, Date)).toThrow(Error)
-                })
-            })
+            describe.each([undefined, Number, Function, Date])(
+                'with unexpected target type (%p)',
+                targetType => {
+                    it('throws an exception when given a Binary value', () => {
+                        const buffer = sequentialBuffer
+                        const binary = new Binary(buffer, Binary.SUBTYPE_UUID)
+                        expect(() => converter.fromDb(binary, targetType)).toThrow(Error)
+                    })
+                }
+            )
         })
     })
 })

@@ -1,5 +1,11 @@
 import { Mapper } from './mapper'
-import { Property, CreationTimestamp, UpdateTimestamp, IntProperty } from './decorators/index'
+import {
+    Property,
+    CreationTimestamp,
+    UpdateTimestamp,
+    IntProperty,
+    DoubleProperty
+} from './decorators'
 import { ObjectIdProperty } from './decorators/object-id-property.decorator'
 import { ObjectID } from 'bson'
 
@@ -29,13 +35,30 @@ describe('mapper', () => {
                 expect(() => new Mapper(CatDocument, { nested: true })).not.toThrow()
             })
         })
+
+        describe('when properties have unsupported converters', () => {
+            class CatDocument {
+                @ObjectIdProperty()
+                _id?: number
+
+                @IntProperty()
+                age: boolean = false
+
+                @DoubleProperty()
+                rating = 9.0
+            }
+
+            it('throws an exception', () => {
+                expect(() => new Mapper(CatDocument)).toThrow(Error)
+            })
+        })
     })
 
     describe('map for insert', () => {
         describe('with a class that has no timestamps', () => {
             class CatDocument {
                 @ObjectIdProperty({ name: '_id', autoGenerate: true })
-                id?: string
+                id?: ObjectID
 
                 @Property({ name: 'catName' })
                 name: string = 'I have a name'
@@ -181,7 +204,7 @@ describe('mapper', () => {
         describe('with a class that has no timestamps', () => {
             class CatDocument {
                 @ObjectIdProperty({ name: '_id' })
-                id = objectId.toHexString() // Same ID for all objects to make testing easier
+                id: string = objectId.toHexString() // Same ID for all objects to make testing easier
 
                 @Property({ name: 'catName' })
                 name: string = 'I have a name'
@@ -241,7 +264,7 @@ describe('mapper', () => {
         describe('with a class that has timestamps', () => {
             class CatDocument {
                 @ObjectIdProperty({ name: '_id' })
-                id = objectId.toHexString() // Same ID for all objects to make testing easier
+                id: string = objectId.toHexString() // Same ID for all objects to make testing easier
 
                 @Property({ name: 'catName' })
                 name: string = 'I have a name'
@@ -316,7 +339,7 @@ describe('mapper', () => {
             @Property()
             color: string = 'black'
 
-            @IntProperty()
+            @Property()
             age?: number | null
 
             @Property()
@@ -333,7 +356,6 @@ describe('mapper', () => {
         })
 
         it('maps valid documents', () => {
-            mapper = new Mapper(CatDocument)
             const result = {
                 _id: objectId,
                 catName: 'I have another name',
@@ -353,5 +375,16 @@ describe('mapper', () => {
 
             expect(mappedDoc).toStrictEqual(expected)
         })
+
+        it('throws an exception when given an array', () => {
+            expect(() => mapper.mapFromResult([])).toThrow(Error)
+        })
+
+        it.each([false, 47, 'a string'])(
+            'throws an exception when given a non-object value (%p)',
+            value => {
+                expect(() => mapper.mapFromResult(value)).toThrow(Error)
+            }
+        )
     })
 })

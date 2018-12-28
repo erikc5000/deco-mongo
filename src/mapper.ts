@@ -28,11 +28,10 @@ export class Mapper<TDocument extends object> {
 
         if (!properties) {
             throw new Error(`No properties are defined on ${classType}.`)
-        } else if (!options.nested && !properties.hasMappedKey('_id')) {
-            throw new Error(`${classType} has no property mapped to '_id'.`)
         }
 
         this.properties = properties
+        this.validateProperties(options)
     }
 
     mapForInsert(document: TDocument): any
@@ -41,7 +40,7 @@ export class Mapper<TDocument extends object> {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForInsert(element))
         } else if (!(document instanceof this.classType)) {
-            return Mapper.unexpectedTypeError(document)
+            return Mapper.throwUnexpectedTypeError(document)
         }
 
         const mappedObject: any = {}
@@ -64,14 +63,14 @@ export class Mapper<TDocument extends object> {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForUpdate(element), options)
         } else if (!(document instanceof this.classType)) {
-            return Mapper.unexpectedTypeError(document)
+            return Mapper.throwUnexpectedTypeError(document)
         }
 
         const updateOp: UpdateOperation = {}
 
         for (const property of this.properties.withoutTimestamp()) {
-            // Ignore any attempt to change the '_id' field
-            if (property.mappedKeyName === '_id') {
+            // Ignore any attempt to change the ID field
+            if (property.isId) {
                 continue
             }
 
@@ -95,7 +94,7 @@ export class Mapper<TDocument extends object> {
         if (Array.isArray(object)) {
             return object.map(element => this.mapPartialToDb(element))
         } else if (typeof object !== 'object') {
-            return Mapper.unexpectedTypeError(object)
+            return Mapper.throwUnexpectedTypeError(object)
         }
 
         const properties = this.properties
@@ -119,7 +118,7 @@ export class Mapper<TDocument extends object> {
 
     mapFromResult(mappedObject: any): TDocument {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
-            return Mapper.unexpectedTypeError(mappedObject)
+            return Mapper.throwUnexpectedTypeError(mappedObject)
         }
 
         const document = new this.classType()
@@ -128,13 +127,7 @@ export class Mapper<TDocument extends object> {
             const mappedKey = property.mappedKeyName
 
             if (mappedKey in mappedObject) {
-                const designType = Reflect.getMetadata(
-                    'design:type',
-                    this.classType.prototype,
-                    property.keyName
-                )
-
-                const value = property.fromDb(mappedObject[mappedKey], designType)
+                const value = property.fromDb(mappedObject[mappedKey])
 
                 if (value !== undefined) {
                     const anyDoc = document as any
@@ -152,7 +145,7 @@ export class Mapper<TDocument extends object> {
 
     mapPartialFromDb(mappedObject: any): Partial<TDocument> {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
-            return Mapper.unexpectedTypeError(mappedObject)
+            return Mapper.throwUnexpectedTypeError(mappedObject)
         }
 
         const properties = this.properties
@@ -163,18 +156,42 @@ export class Mapper<TDocument extends object> {
             const property = properties.getFromMappedKey(mappedKey)
 
             if (property) {
-                const designType = Reflect.getMetadata(
-                    'design:type',
-                    this.classType.prototype,
-                    property.keyName
-                )
-
-                const value = property.fromDb(mappedObject[mappedKey], designType)
+                const value = property.fromDb(mappedObject[mappedKey])
                 object[property.keyName] = value
             }
         }
 
         return object
+    }
+
+    /**
+     * Validate all property definitions on the class associated with this mapper.  If there are
+     * any errors, an exception will be thrown, reporting each of them individually.
+     * @param options Mapper options
+     */
+    private validateProperties(options: MapperOptions) {
+        const errors: string[] = []
+
+        if (!options.nested && !this.properties.hasId()) {
+            errors.push(`No property is mapped to '_id'.`)
+        }
+
+        for (const property of this.properties.all()) {
+            const result = property.validate()
+
+            if (!result.valid) {
+                errors.push(`${property.keyName}: ` + result.error)
+            }
+        }
+
+        if (errors.length > 0) {
+            const message =
+                `Errors were found in the property mapping definitions for ` +
+                `${this.classType.name}:\n` +
+                errors.map(value => '  ● ' + value).join('\n')
+
+            throw new Error(message)
+        }
     }
 
     private populateTimestampsForInsert(mappedObject: any) {
@@ -215,7 +232,7 @@ export class Mapper<TDocument extends object> {
         return updateOp
     }
 
-    private static unexpectedTypeError(object: any): never {
+    private static throwUnexpectedTypeError(object: any): never {
         throw new Error(`Mapping object of unexpected type '${typeof object}'`)
     }
 }

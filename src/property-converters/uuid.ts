@@ -93,7 +93,7 @@ export class UuidConverter extends PropertyConverter {
         }
     }
 
-    get supportedTypes() {
+    getSupportedTypes() {
         return [Binary, Buffer, String]
     }
 

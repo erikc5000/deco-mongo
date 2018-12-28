@@ -1,7 +1,12 @@
-import { PropertyOptions, TimestampType } from '../interfaces'
+import { PropertyOptions, TimestampType, ClassType } from '../interfaces'
 import { PropertyConverter } from '../property-converter'
 import { CustomPropertyConverter } from './custom-property-converter'
 import { DefaultPropertyConverter } from '../property-converters'
+
+export interface ValidateResult {
+    valid: boolean
+    error?: string
+}
 
 export class MappedProperty {
     readonly mappedKeyName: string
@@ -10,7 +15,11 @@ export class MappedProperty {
 
     private static readonly defaultConverter = new DefaultPropertyConverter()
 
-    constructor(readonly keyName: string, options: PropertyOptions = {}) {
+    constructor(
+        readonly keyName: string,
+        private readonly type: any,
+        options: PropertyOptions = {}
+    ) {
         this.mappedKeyName = options.name || this.keyName
         this.timestampType = options.timestamp
 
@@ -23,6 +32,10 @@ export class MappedProperty {
         } else {
             throw new Error('Invalid property converter')
         }
+    }
+
+    get isId() {
+        return this.mappedKeyName === '_id'
     }
 
     get isTimestamp() {
@@ -41,7 +54,45 @@ export class MappedProperty {
         return this.converter.toDb(value)
     }
 
-    fromDb(mappedValue: any, targetType?: any) {
-        return this.converter.fromDb(mappedValue, targetType)
+    fromDb(mappedValue: any) {
+        return this.converter.fromDb(mappedValue, this.type)
+    }
+
+    validate(): ValidateResult {
+        if (!this.converter.supportsType(this.type)) {
+            let message =
+                `The type '${MappedProperty.getTypeString(this.type)}' is ` +
+                `incompatible with the specified converter.`
+
+            const supportedTypes = this.converter
+                .getSupportedTypes()
+                .map(value => MappedProperty.getTypeString(value))
+                .join(', ')
+
+            if (supportedTypes.length > 0) {
+                message += `  ${this.converter.constructor.name} supports [${supportedTypes}].`
+            }
+
+            return { valid: false, error: message }
+        } else {
+            return { valid: true }
+        }
+    }
+
+    private static getTypeString(type: any) {
+        switch (type) {
+            case Boolean:
+                return 'boolean'
+            case String:
+                return 'string'
+            case Number:
+                return 'number'
+            case Symbol:
+                return 'symbol'
+            case Object:
+                return 'object'
+            default:
+                return type.name
+        }
     }
 }

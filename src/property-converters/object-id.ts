@@ -54,7 +54,7 @@ export class ObjectIdConverter extends PropertyConverter {
         }
     }
 
-    get supportedTypes() {
+    getSupportedTypes() {
         return [String, ObjectID]
     }
 

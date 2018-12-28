@@ -36,6 +36,14 @@ export class PropertiesMetadata {
         }
     }
 
+    hasId() {
+        return this.hasMappedKey('_id')
+    }
+
+    getId() {
+        return this.getFromMappedKey('_id')
+    }
+
     hasKey(keyName: string | symbol) {
         return this.keyMap.has(keyName)
     }

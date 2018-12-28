@@ -2,112 +2,110 @@ import { GeoJsonPointConverter } from './index'
 import { CoordType } from './geo-json-point'
 
 describe('GeoJSON point converter', () => {
-    let converter: GeoJsonPointConverter
-
-    beforeEach(() => {
-        converter = new GeoJsonPointConverter()
-    })
-
     describe('to DB', () => {
-        it('preserves undefined values', () => {
-            expect(converter.toDb(undefined)).toBeUndefined()
+        describe.each([
+            new GeoJsonPointConverter({ coordType: CoordType.LatLong }),
+            new GeoJsonPointConverter({ coordType: CoordType.LongLat })
+        ])('with any coord type (%#)', (converter: GeoJsonPointConverter) => {
+            it('preserves undefined values', () => {
+                expect(converter.toDb(undefined)).toBeUndefined()
+            })
+
+            it('throws an exception when given an array with less than 2 elements', () => {
+                expect(() => converter.toDb([40.0])).toThrow(Error)
+            })
+
+            it('throws an exception when given an array with more than 2 elements', () => {
+                expect(() => converter.toDb([40.0, 45.0, 65.0])).toThrow(Error)
+            })
+
+            it('throws an exception when given an array with any non-number elements', () => {
+                expect(() => converter.toDb([40.0, '45.0'])).toThrow(Error)
+                expect(() => converter.toDb(['0.0', '0.0'])).toThrow(Error)
+            })
+
+            it('throws an exception when given a non-array value', () => {
+                expect(() => converter.toDb(null)).toThrow(Error)
+                expect(() => converter.toDb(true)).toThrow(Error)
+                expect(() => converter.toDb('45.0,40.0')).toThrow(Error)
+            })
         })
 
-        it('preserves null values', () => {
-            expect(converter.toDb(null)).toBeNull()
+        describe('with lat/long coord type', () => {
+            it('should convert a [latitude, longitude] array', () => {
+                const converter = new GeoJsonPointConverter()
+                const toDbValue = converter.toDb([40.0, 45.0])
+                expect(toDbValue).toStrictEqual({ type: 'Point', coordinates: [45.0, 40.0] })
+            })
         })
 
-        it('should convert a valid [latitude, longitude] array', () => {
-            const toDbValue = converter.toDb([40.0, 45.0])
-            expect(typeof toDbValue).toEqual('object')
-            expect(toDbValue.type).toEqual('Point')
-            expect(toDbValue.coordinates).toEqual([45.0, 40.0])
-        })
-
-        it('should optionally convert a valid [longitude, latitude] array', () => {
-            const longLatConverter = new GeoJsonPointConverter({ coordType: CoordType.LongLat })
-            const toDbValue = longLatConverter.toDb([45.0, 40.0])
-            expect(typeof toDbValue).toEqual('object')
-            expect(toDbValue.type).toEqual('Point')
-            expect(toDbValue.coordinates).toEqual([45.0, 40.0])
-        })
-
-        it('throws an exception when given an array with less than 2 elements', () => {
-            expect(() => converter.toDb([40.0])).toThrow(Error)
-        })
-
-        it('throws an exception when given an array with more than 2 elements', () => {
-            expect(() => converter.toDb([40.0, 45.0, 65.0])).toThrow(Error)
-        })
-
-        it('throws an exception when given an array with any non-number elements', () => {
-            expect(() => converter.toDb([40.0, '45.0'])).toThrow(Error)
-            expect(() => converter.toDb(['0.0', '0.0'])).toThrow(Error)
+        describe('with long/lat coord type', () => {
+            it('should convert a [longitude, latitude] array', () => {
+                const converter = new GeoJsonPointConverter({ coordType: CoordType.LongLat })
+                const toDbValue = converter.toDb([45.0, 40.0])
+                expect(toDbValue).toStrictEqual({ type: 'Point', coordinates: [45.0, 40.0] })
+            })
         })
     })
 
     describe('from DB', () => {
-        describe('with any target type', () => {
-            it('preserves undefined values', () => {
-                expect(converter.fromDb(undefined)).toBeUndefined()
-                expect(converter.fromDb(undefined, Object)).toBeUndefined()
-                expect(converter.fromDb(undefined, Array)).toBeUndefined()
-            })
+        describe.each([undefined, Array, Object, String, Function])(
+            'with any target type (%p)',
+            targetType => {
+                const converter = new GeoJsonPointConverter()
 
-            it('preserves null values', () => {
-                expect(converter.fromDb(null)).toBeNull()
-                expect(converter.fromDb(null, Object)).toBeNull()
-                expect(converter.fromDb(null, Array)).toBeNull()
-            })
+                it('preserves undefined values', () => {
+                    expect(converter.fromDb(undefined, targetType)).toBeUndefined()
+                })
 
-            it('should fail to convert coordinates', () => {
-                expect(() => converter.fromDb([40, 45.0])).toThrow(Error)
-                expect(() => converter.fromDb([40, 45.0], Object)).toThrow(Error)
-                expect(() => converter.fromDb([40, 45.0], Array)).toThrow(Error)
-            })
-        })
+                it('throws an exception when given a null value', () => {
+                    expect(() => converter.fromDb(null, targetType)).toThrow(Error)
+                })
+
+                it('throws an exception when given a coordinate array', () => {
+                    expect(() => converter.fromDb([40, 45.0], targetType)).toThrow(Error)
+                })
+            }
+        )
 
         describe('with Array target type', () => {
-            it('should convert GeoJSON location objects, irrespective of type', () => {
+            it('converts GeoJSON locations to [latitude, longitude], irrespective of type', () => {
+                const converter = new GeoJsonPointConverter()
+
                 const fromDbValue = converter.fromDb(
                     { coordinates: [45.0, 40.0], type: 'NotAPoint' },
                     Array
                 )
                 expect(fromDbValue).toBeInstanceOf(Array)
                 expect(fromDbValue).toHaveLength(2)
-                expect(fromDbValue[0]).toBe(40.0)
-                expect(fromDbValue[1]).toBe(45.0)
+                expect(fromDbValue![0]).toBe(40.0)
+                expect(fromDbValue![1]).toBe(45.0)
             })
 
-            it('should optionally convert GeoJSON objects to [longitude, latitude]', () => {
-                const longLatConverter = new GeoJsonPointConverter({ coordType: CoordType.LongLat })
+            it('converts GeoJSON locations to [longitude, latitude], irrespective of type', () => {
+                const converter = new GeoJsonPointConverter({ coordType: CoordType.LongLat })
 
-                const fromDbValue = longLatConverter.fromDb(
-                    {
-                        coordinates: [45.0, 40.0],
-                        type: 'Point'
-                    },
+                const fromDbValue = converter.fromDb(
+                    { coordinates: [45.0, 40.0], type: 'Point?' },
                     Array
                 )
-
                 expect(fromDbValue).toBeInstanceOf(Array)
                 expect(fromDbValue).toHaveLength(2)
-                expect(fromDbValue[0]).toBe(45.0)
-                expect(fromDbValue[1]).toBe(40.0)
+                expect(fromDbValue![0]).toBe(45.0)
+                expect(fromDbValue![1]).toBe(40.0)
             })
         })
 
-        describe('with unexpected target type', () => {
-            it('throws an exception', () => {
-                const fromDbValue = converter.fromDb(
-                    { coordinates: [45.0, 40.0], type: 'NotAPoint' },
-                    Array
-                )
+        describe.each([undefined, Object, String, Boolean])(
+            'with unsupported target type (%p)',
+            targetType => {
+                const converter = new GeoJsonPointConverter()
+                const value = { coordinates: [45.0, 40.0], type: 'NotAPoint' }
 
-                expect(() => converter.fromDb(fromDbValue, Object)).toThrow(Error)
-                expect(() => converter.fromDb(fromDbValue, String)).toThrow(Error)
-                expect(() => converter.fromDb(fromDbValue, Boolean)).toThrow(Error)
-            })
-        })
+                it('throws an exception', () => {
+                    expect(() => converter.fromDb(value, targetType)).toThrow(Error)
+                })
+            }
+        )
     })
 })

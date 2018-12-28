@@ -20,6 +20,7 @@ export function Property(options?: PropertyOptions) {
             Reflect.defineMetadata(PROPERTIES_KEY, properties, target.constructor)
         }
 
-        properties.push(new MappedProperty(String(propertyKey), options))
+        const type = Reflect.getMetadata('design:type', target, propertyKey)
+        properties.push(new MappedProperty(String(propertyKey), type, options))
     }
 }

@@ -19,12 +19,20 @@ export abstract class PropertyConverter implements IPropertyConverter {
      */
     abstract fromDb(value: any, targetType?: any): any
 
+    /**
+     * Returns true if the provided type is supported by this property converter.  By default, it
+     * checks if the type is in getSupportedTypes(), but this behavior may be overridden.
+     * @param type The type of the property in the class definition
+     */
     supportsType(type: any): boolean {
-        const supportedTypes = this.supportedTypes
-        return supportedTypes.length === 0 || type in supportedTypes
+        const supportedTypes = this.getSupportedTypes()
+        return supportedTypes.length === 0 || supportedTypes.some(value => value === type)
     }
 
-    get supportedTypes(): any[] {
+    /**
+     * Returns a list of constructor functions for all supported types
+     */
+    getSupportedTypes(): any[] {
         return []
     }
 }

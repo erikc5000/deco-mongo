@@ -28,6 +28,7 @@ function isCoordinates(value: any): value is Coordinates {
 function isGeoJsonLocation(value: any): value is GeoJsonLocation {
     return (
         typeof value === 'object' &&
+        value != null &&
         typeof value.type === 'string' &&
         isCoordinates(value.coordinates)
     )
@@ -44,8 +45,8 @@ export class GeoJsonPointConverter extends PropertyConverter {
     }
 
     toDb(value: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (!isCoordinates(value)) {
             throw new Error(`Expected an array containing '[number, number]'`)
         }
@@ -61,9 +62,9 @@ export class GeoJsonPointConverter extends PropertyConverter {
         return location
     }
 
-    fromDb(value: any, targetType?: any): Coordinates {
-        if (value == null) {
-            return value
+    fromDb(value: any, targetType?: any) {
+        if (value === undefined) {
+            return undefined
         } else if (!isGeoJsonLocation(value)) {
             throw new Error('Expected a valid GeoJSON location')
         }
@@ -77,7 +78,7 @@ export class GeoJsonPointConverter extends PropertyConverter {
             : value.coordinates
     }
 
-    get supportedTypes() {
+    getSupportedTypes() {
         return [Array]
     }
 }
