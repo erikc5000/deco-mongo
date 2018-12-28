@@ -14,30 +14,6 @@ describe('collection decorator', () => {
             expect(metadata.name).toBe('cats')
             expect(metadata.options).toBeUndefined()
         })
-
-        // it('should have metadata containing a JSON schema object when provided', () => {
-        //     const catSchema = {
-        //         bsonType: 'object',
-        //         additionalProperties: false,
-        //         properties: {
-        //             name: {
-        //                 bsonType: 'string'
-        //             }
-        //         }
-        //     }
-
-        //     @Collection('schemaCats', { jsonSchema: { use: catSchema } })
-        //     class SchemaCatDocument {
-        //         name?: string
-        //     }
-
-        //     const metadata = getCollectionMetadata(SchemaCatDocument)
-        //     expect(metadata).toBeDefined()
-        //     expect(metadata.name).toBe('schemaCats')
-        //     expect(metadata.options).toBeDefined()
-        //     expect(metadata.options!.jsonSchema).toBeDefined()
-        //     expect(metadata.options!.jsonSchema!.use).toEqual(catSchema)
-        // })
     })
 
     describe('undecorated class', () => {
