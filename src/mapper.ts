@@ -20,10 +20,10 @@ export interface MapperOptions {
 /**
  * Map objects between their in-memory and database representations.
  */
-export class Mapper<TDocument extends object> {
+export class Mapper<T extends object> {
     private readonly properties: PropertiesMetadata
 
-    constructor(private readonly classType: ClassType<TDocument>, options: MapperOptions = {}) {
+    constructor(private readonly classType: ClassType<T>, options: MapperOptions = {}) {
         const properties = getPropertiesMetadata(this.classType)
 
         if (!properties) {
@@ -34,9 +34,9 @@ export class Mapper<TDocument extends object> {
         this.validateProperties(options)
     }
 
-    mapForInsert(document: TDocument): any
-    mapForInsert(documents: TDocument[]): any[]
-    mapForInsert(document: TDocument | TDocument[]): any {
+    mapForInsert(document: T): any
+    mapForInsert(documents: T[]): any[]
+    mapForInsert(document: T | T[]): any {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForInsert(element))
         } else if (!(document instanceof this.classType)) {
@@ -57,9 +57,9 @@ export class Mapper<TDocument extends object> {
         return this.populateTimestampsForInsert(mappedObject)
     }
 
-    mapForUpdate(document: TDocument, options?: MapForUpdateOptions): UpdateOperation
-    mapForUpdate(documents: TDocument[], options?: MapForUpdateOptions): UpdateOperation[]
-    mapForUpdate(document: TDocument | TDocument[], options?: MapForUpdateOptions): any {
+    mapForUpdate(document: T, options?: MapForUpdateOptions): UpdateOperation
+    mapForUpdate(documents: T[], options?: MapForUpdateOptions): UpdateOperation[]
+    mapForUpdate(document: T | T[], options?: MapForUpdateOptions): any {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForUpdate(element), options)
         } else if (!(document instanceof this.classType)) {
@@ -88,9 +88,9 @@ export class Mapper<TDocument extends object> {
         return this.populateTimestampsForUpdate(updateOp, options && options.upsert)
     }
 
-    mapPartialToDb(object: Partial<TDocument>): any
-    mapPartialToDb(objects: Partial<TDocument>[]): any[]
-    mapPartialToDb(object: Partial<TDocument> | Partial<TDocument>[]): any {
+    mapPartialToDb(object: Partial<T>): any
+    mapPartialToDb(objects: Partial<T>[]): any[]
+    mapPartialToDb(object: Partial<T> | Partial<T>[]): any {
         if (Array.isArray(object)) {
             return object.map(element => this.mapPartialToDb(element))
         } else if (typeof object !== 'object') {
@@ -112,11 +112,11 @@ export class Mapper<TDocument extends object> {
         return mappedObject
     }
 
-    mapFromResults(mappedObjects: any[]): TDocument[] {
+    mapFromResults(mappedObjects: any[]): T[] {
         return mappedObjects.map(element => this.mapFromResult(element))
     }
 
-    mapFromResult(mappedObject: any): TDocument {
+    mapFromResult(mappedObject: any): T {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
             return Mapper.throwUnexpectedTypeError(mappedObject)
         }
@@ -139,11 +139,11 @@ export class Mapper<TDocument extends object> {
         return document
     }
 
-    mapPartialsFromDb(mappedObjects: any[]): Partial<TDocument>[] {
+    mapPartialsFromDb(mappedObjects: any[]): Partial<T>[] {
         return mappedObjects.map(element => this.mapPartialFromDb(element))
     }
 
-    mapPartialFromDb(mappedObject: any): Partial<TDocument> {
+    mapPartialFromDb(mappedObject: any): Partial<T> {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
             return Mapper.throwUnexpectedTypeError(mappedObject)
         }

@@ -1,4 +1,4 @@
-import { DoubleConverter } from './index'
+import { DoubleConverter } from './double.converter'
 import { Double } from 'bson'
 
 describe('Double converter', () => {

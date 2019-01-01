@@ -1,4 +1,4 @@
-import { IntConverter } from './index'
+import { IntConverter } from './int.converter'
 import { Int32 } from 'bson'
 
 describe('Int32 converter', () => {

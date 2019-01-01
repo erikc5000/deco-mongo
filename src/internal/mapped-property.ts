@@ -1,6 +1,6 @@
 import { PropertyOptions, TimestampType, ClassType } from '../interfaces'
 import { PropertyConverter } from '../property-converter'
-import { CustomConverter } from './custom.converter'
+import { CustomPropertyConverter } from './custom-property-converter'
 import { DefaultConverter } from '../property-converters'
 
 export interface ValidateResult {
@@ -28,7 +28,7 @@ export class MappedProperty {
         } else if (options.converter instanceof PropertyConverter) {
             this.converter = options.converter
         } else if (typeof options.converter === 'object') {
-            this.converter = new CustomConverter(options.converter)
+            this.converter = new CustomPropertyConverter(options.converter)
         } else {
             throw new Error('Invalid property converter')
         }

@@ -1,6 +1,6 @@
 import { BasicPropertyOptions, ClassType } from '../interfaces'
 import { Property } from './property.decorator'
-import { NestedPropertyConverter } from '../property-converters/'
+import { NestedConverter } from '../property-converters'
 
 /**
  * A sub-document that should be mapped using another class with its own property decorators
@@ -10,5 +10,5 @@ export function NestedProperty<T extends object>(
     classType: ClassType<T>,
     options?: BasicPropertyOptions
 ) {
-    return Property({ converter: new NestedPropertyConverter(classType), ...options })
+    return Property({ converter: new NestedConverter(classType), ...options })
 }

@@ -1,4 +1,4 @@
-import { UuidConverter } from './index'
+import { UuidConverter } from './uuid.converter'
 import { Binary } from 'bson'
 import uuid = require('uuid')
 

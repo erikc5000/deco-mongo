@@ -1,11 +1,11 @@
 import { Mapper } from '../mapper'
 import { PropertyConverter } from '../property-converter'
-import { ClassType } from '../interfaces'
+import { ClassType } from '../interfaces/index'
 
 /**
  * Convert properties of a sub-document individually using a class that implements its interface
  */
-export class NestedPropertyConverter<T extends object> extends PropertyConverter {
+export class NestedConverter<T extends object> extends PropertyConverter {
     private readonly mapper: Mapper<T>
 
     /**
@@ -18,8 +18,8 @@ export class NestedPropertyConverter<T extends object> extends PropertyConverter
     }
 
     toDb(value: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (typeof value !== 'object') {
             throw new Error('Expected an object')
         }
@@ -28,8 +28,8 @@ export class NestedPropertyConverter<T extends object> extends PropertyConverter
     }
 
     fromDb(value: any, targetType?: any) {
-        if (value == null) {
-            return value
+        if (value === undefined) {
+            return undefined
         } else if (typeof value !== 'object') {
             throw new Error('Expected an object')
         }

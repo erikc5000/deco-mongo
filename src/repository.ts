@@ -5,15 +5,15 @@ import { getIndexesMetadata } from './internal/metadata/indexes.metadata'
 import { ClassType, CollectionOptions } from './interfaces/index'
 import { Mapper } from './mapper'
 
-export class Repository<TDocument extends object> {
-    readonly mapper: Mapper<TDocument>
+export class Repository<T extends object> {
+    readonly mapper: Mapper<T>
 
-    constructor(classType: ClassType<TDocument>, readonly collection: mongo.Collection) {
+    constructor(classType: ClassType<T>, readonly collection: mongo.Collection) {
         this.mapper = new Mapper(classType)
     }
 
-    static async create<TInterface, TDocument extends object>(
-        classType: ClassType<TDocument>,
+    static async create<T extends object>(
+        classType: ClassType<T>,
         db: mongo.Db
     ) {
         const { name, options } = getCollectionMetadata(classType)
@@ -42,7 +42,7 @@ export class Repository<TDocument extends object> {
             await Repository.createIndexes(classType, collection)
         }
 
-        return new Repository<TDocument>(classType, collection)
+        return new Repository<T>(classType, collection)
     }
 
     private static getCollectionCreateOptions(options?: CollectionOptions) {
