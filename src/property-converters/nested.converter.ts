@@ -7,12 +7,13 @@ import { ClassType } from '../interfaces/index'
  */
 export class NestedConverter<T extends object> extends PropertyConverter {
     private readonly mapper: Mapper<T>
+    private supportedTypes?: any[]
 
     /**
      * Construct a new nested property converter
      * @param classType The class to be used for conversion
      */
-    constructor(classType: ClassType<T>) {
+    constructor(private readonly classType: ClassType<T>) {
         super()
         this.mapper = new Mapper(classType, { nested: true })
     }
@@ -31,9 +32,35 @@ export class NestedConverter<T extends object> extends PropertyConverter {
         if (value === undefined) {
             return undefined
         } else if (typeof value !== 'object') {
-            throw new Error('Expected an object')
+            throw new Error('Expected an object or array of objects')
+        } else if (!this.supportsType(targetType)) {
+            throw new Error(`Incompatible target type '${targetType.name}'`)
         }
 
-        return this.mapper.mapFromResult(value)
+        if (targetType === Array) {
+            if (!Array.isArray(value)) {
+                return [this.mapper.mapFromResult(value)]
+            } else {
+                return this.mapper.mapFromResults(value)
+            }
+        } else {
+            return this.mapper.mapFromResult(value)
+        }
+    }
+
+    getSupportedTypes() {
+        if (!this.supportedTypes) {
+            this.supportedTypes = [Array, Object, this.classType]
+
+            for (
+                let parentClass = Object.getPrototypeOf(this.classType.prototype.constructor);
+                typeof parentClass.prototype !== 'undefined';
+                parentClass = Object.getPrototypeOf(parentClass.prototype.constructor)
+            ) {
+                this.supportedTypes.push(parentClass)
+            }
+        }
+
+        return this.supportedTypes
     }
 }

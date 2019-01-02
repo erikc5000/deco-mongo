@@ -8,9 +8,9 @@ export interface CollectionMetadata {
 }
 
 export function getCollectionMetadata<TDocument>(c: ClassType<TDocument>) {
-    if (!Reflect.hasMetadata(COLLECTION_KEY, c)) {
+    if (!Reflect.hasOwnMetadata(COLLECTION_KEY, c)) {
         throw new Error(`${c} has no @Collection() decorator`)
     }
 
-    return Reflect.getMetadata(COLLECTION_KEY, c) as CollectionMetadata
+    return Reflect.getOwnMetadata(COLLECTION_KEY, c) as CollectionMetadata
 }

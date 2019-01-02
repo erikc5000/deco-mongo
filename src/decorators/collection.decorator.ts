@@ -9,7 +9,7 @@ import 'reflect-metadata'
  */
 export function Collection(name: string, options?: CollectionOptions) {
     return (target: any) => {
-        if (Reflect.hasMetadata(COLLECTION_KEY, target)) {
+        if (Reflect.hasOwnMetadata(COLLECTION_KEY, target)) {
             throw new Error(`Found more than one @Collection() decorator on '${target}'`)
         }
 

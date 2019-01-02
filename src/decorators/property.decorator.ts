@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import {
     PROPERTIES_KEY,
-    getPropertiesMetadata,
-    PropertiesMetadata
+    PropertiesMetadata,
+    getPropertiesMetadata
 } from '../internal/metadata/properties.metadata'
 import { PropertyOptions } from '../interfaces'
 import { MappedProperty } from '../internal/mapped-property'
@@ -16,7 +16,7 @@ export function Property(options?: PropertyOptions) {
         let properties = getPropertiesMetadata(target.constructor)
 
         if (!properties) {
-            properties = new PropertiesMetadata()
+            properties = new PropertiesMetadata(target.constructor)
             Reflect.defineMetadata(PROPERTIES_KEY, properties, target.constructor)
         }
 

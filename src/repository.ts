@@ -12,10 +12,7 @@ export class Repository<T extends object> {
         this.mapper = new Mapper(classType)
     }
 
-    static async create<T extends object>(
-        classType: ClassType<T>,
-        db: mongo.Db
-    ) {
+    static async create<T extends object>(classType: ClassType<T>, db: mongo.Db) {
         const { name, options } = getCollectionMetadata(classType)
         const collExists = await collectionExists(name, db)
         let collection: mongo.Collection

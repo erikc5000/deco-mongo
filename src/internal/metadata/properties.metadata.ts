@@ -4,11 +4,25 @@ import { ClassType } from '../../interfaces'
 export const PROPERTIES_KEY = Symbol('decoMongo:properties')
 
 export class PropertiesMetadata {
-    private readonly keyMap = new Map<string | symbol, MappedProperty>()
-    private readonly reverseKeyMap = new Map<string | symbol, MappedProperty>()
+    private readonly keyMap = new Map<string, MappedProperty>()
+    private readonly reverseKeyMap = new Map<string, MappedProperty>()
+    private readonly allProperties: MappedProperty[] = []
     private readonly nonTimestamps: MappedProperty[] = []
     private readonly createTimestamps: MappedProperty[] = []
     private readonly updateTimestamps: MappedProperty[] = []
+    readonly parentMetadata?: PropertiesMetadata
+
+    constructor(classType: ClassType<any>) {
+        const parentClass = Object.getPrototypeOf(classType.prototype.constructor)
+
+        if (typeof parentClass.prototype !== 'undefined') {
+            this.parentMetadata = getPropertiesMetadata(parentClass)
+
+            if (this.parentMetadata) {
+                this.parentMetadata.all().forEach(property => this.push(property))
+            }
+        }
+    }
 
     push(property: MappedProperty) {
         if (this.keyMap.has(property.keyName)) {
@@ -26,6 +40,7 @@ export class PropertiesMetadata {
 
         this.keyMap.set(property.keyName, property)
         this.reverseKeyMap.set(property.mappedKeyName, property)
+        this.allProperties.push(property)
 
         if (property.isCreateTimestamp) {
             this.createTimestamps.push(property)
@@ -44,30 +59,30 @@ export class PropertiesMetadata {
         return this.getFromMappedKey('_id')
     }
 
-    hasKey(keyName: string | symbol) {
+    hasKey(keyName: string) {
         return this.keyMap.has(keyName)
     }
 
-    hasMappedKey(mappedKey: string | symbol) {
+    hasMappedKey(mappedKey: string) {
         return this.reverseKeyMap.has(mappedKey)
     }
 
-    get(keyName: string | symbol) {
-        const propertyMetadata = this.keyMap.get(keyName)
+    get(keyName: string) {
+        const property = this.keyMap.get(keyName)
 
-        if (!propertyMetadata) {
+        if (!property) {
             throw new Error(`Invalid key name '${String(keyName)}'`)
         }
 
-        return propertyMetadata
+        return property
     }
 
-    getFromMappedKey(mappedKey: string | symbol) {
+    getFromMappedKey(mappedKey: string) {
         return this.reverseKeyMap.get(mappedKey)
     }
 
     all() {
-        return this.keyMap.values()
+        return this.allProperties
     }
 
     withoutTimestamp() {
@@ -87,6 +102,6 @@ export class PropertiesMetadata {
     }
 }
 
-export function getPropertiesMetadata<TDocument>(classType: ClassType<TDocument>) {
-    return Reflect.getMetadata(PROPERTIES_KEY, classType) as PropertiesMetadata | undefined
+export function getPropertiesMetadata<T>(classType: ClassType<T>) {
+    return Reflect.getOwnMetadata(PROPERTIES_KEY, classType) as PropertiesMetadata | undefined
 }

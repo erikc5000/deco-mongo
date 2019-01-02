@@ -1,5 +1,6 @@
 import { Property } from '../decorators/index'
 import { NestedConverter } from './nested.converter'
+import { getPropertiesMetadata } from '../internal/metadata/properties.metadata'
 
 describe('nested converter', () => {
     class CatDocument {
@@ -15,6 +16,11 @@ describe('nested converter', () => {
     class SpecialCat extends CatDocument {
         @Property()
         special: boolean = true
+    }
+
+    class SuperSpecialCat extends SpecialCat {
+        @Property()
+        superSpecial: boolean = true
     }
 
     class UndecoratedCat {
@@ -53,7 +59,7 @@ describe('nested converter', () => {
             expect(converter.toDb(document)).toStrictEqual({ name: 'Alfred', color: 'black' })
         })
 
-        it.skip('converts only decorated properties of the converter class when given an instance of a subclass', () => {
+        it('converts only decorated properties of the converter class when given an instance of a subclass', () => {
             const document = new SpecialCat()
             expect(converter.toDb(document)).toStrictEqual({ color: 'black' })
         })
@@ -64,28 +70,75 @@ describe('nested converter', () => {
         })
     })
 
-    // describe('from DB', () => {
-    //     describe.each([undefined, Number, String, Object])(
-    //         'with any target type (%p)',
-    //         targetType => {
-    //             it('preserves undefined values', () => {
-    //                 expect(converter.fromDb(undefined, targetType)).toBeUndefined()
-    //             })
-    //         }
-    //     )
+    describe('from DB', () => {
+        const converter = new NestedConverter(SpecialCat)
 
-    //     describe('with Boolean target type', () => {
-    //         it('preserves boolean values', () => {
-    //             const fromDbValue = converter.fromDb(true, Boolean)
-    //             expect(fromDbValue).toBe(true)
-    //         })
+        describe.each([undefined, Number, String, Object])(
+            'with any target type (%p)',
+            targetType => {
+                it('preserves undefined values', () => {
+                    expect(converter.fromDb(undefined, targetType)).toBeUndefined()
+                })
 
-    //         it.each(['name', {}, 10, []])(
-    //             'throws an exception when given a non-boolean value',
-    //             value => {
-    //                 expect(() => converter.fromDb(value, Boolean)).toThrow(Error)
-    //             }
-    //         )
-    //     })
-    // })
+                it.each(['string', 1, false])(
+                    'throws an exception when given a non-object value (%p)',
+                    value => {
+                        expect(() => converter.fromDb(value, targetType)).toThrow(Error)
+                    }
+                )
+            }
+        )
+
+        describe.each([Object, CatDocument, SpecialCat])(
+            'with supported object target type (%p)',
+            targetType => {
+                it('converts objects to instances of the converter class', () => {
+                    const fromDbValue = converter.fromDb({ name: 'Fred' }, targetType)
+
+                    const expected = new SpecialCat()
+                    expected.name = 'Fred'
+
+                    expect(fromDbValue).toStrictEqual(expected)
+                })
+            }
+        )
+
+        describe('with Array target type', () => {
+            it('converts objects to arrays containing instances of the converter class', () => {
+                const fromDbValue = converter.fromDb({ name: 'Fred' }, Array)
+
+                const expected = new SpecialCat()
+                expected.name = 'Fred'
+
+                expect(fromDbValue).toStrictEqual([expected])
+            })
+
+            it('preserves empty arrays', () => {
+                expect(converter.fromDb([], Array)).toEqual([])
+            })
+
+            it('converts arrays of objects to arrays containing instances of the converter class', () => {
+                const fromDbValue = converter.fromDb([{ name: 'Fred' }], Array)
+
+                const expected = new SpecialCat()
+                expected.name = 'Fred'
+
+                expect(fromDbValue).toStrictEqual([expected])
+            })
+
+            it('throws an exception when converting arrays containing non-object elements', () => {
+                expect(() => converter.fromDb([5], Array)).toThrow(Error)
+                expect(() => converter.fromDb([{}, 'string'], Array)).toThrow(Error)
+            })
+        })
+
+        describe.each([SuperSpecialCat, DogDocument, Boolean, String, Number, Function])(
+            'with incompatible target type (%p)',
+            targetType => {
+                it('throws an exception', () => {
+                    expect(() => converter.fromDb({ prop: 'value' }, targetType)).toThrow(Error)
+                })
+            }
+        )
+    })
 })
