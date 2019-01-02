@@ -1,6 +1,6 @@
 import { Mapper } from '../mapper'
 import { PropertyConverter } from '../property-converter'
-import { ClassType } from '../interfaces/index'
+import { ClassType } from '../interfaces'
 
 /**
  * Convert properties of a sub-document individually using a class that implements its interface

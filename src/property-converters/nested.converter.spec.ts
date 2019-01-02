@@ -1,6 +1,5 @@
-import { Property } from '../decorators/index'
+import { Property } from '../decorators'
 import { NestedConverter } from './nested.converter'
-import { getPropertiesMetadata } from '../internal/metadata/properties.metadata'
 
 describe('nested converter', () => {
     class CatDocument {

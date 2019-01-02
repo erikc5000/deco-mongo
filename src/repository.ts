@@ -2,7 +2,7 @@ import * as mongo from 'mongodb'
 import { collectionExists, isIndexOptionsConflictError } from './internal/mongo-util'
 import { getCollectionMetadata } from './internal/metadata/collection.metadata'
 import { getIndexesMetadata } from './internal/metadata/indexes.metadata'
-import { ClassType, CollectionOptions } from './interfaces/index'
+import { ClassType, CollectionOptions } from './interfaces'
 import { Mapper } from './mapper'
 
 export class Repository<T extends object> {
