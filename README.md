@@ -2,7 +2,7 @@
 
 ## Description
 
-Deco-Mongo is a modern MongoDB ODM written in Typescript.  By taking advantage of newer Javascript features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in my totally biased opinion, anyway. :-)
+Deco-Mongo is a modern MongoDB ODM written in Typescript.  By taking advantage of newer Javascript features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in my totally biased opinion, anyway. :smiley:
 
 This project is still early in its development with the initial focus on developing a mapping layer that enables conversion between in-memory Typescript classes and MongoDB documents.  Changes are likely and documentation is a work in progress.
 
@@ -42,7 +42,7 @@ export class DogDocument implements Dog {
   @IntProperty()
   age?: number
   
-  @Property({ converter: { fromDb: value => true /* Everyone likes pizza */ } })
+  @Property({ converter: { fromDb: value => true /* Every dog likes pizza, but only when it comes out of a DB */ } })
   likesPizza?: boolean
   
   @Property({ converter: new GeoJsonPointConverter() })
@@ -55,11 +55,11 @@ export class DogDocument implements Dog {
 
 #### Collection definition
 
-The @Collection() decorator defines a link between DogDocument and a collection in Mongo named 'dogs'.  You'll see later that when creating a Repository, the Mongo collection will be automatically initialized with any specified options.
+The `@Collection()` decorator defines a link between DogDocument and a collection in Mongo named 'dogs'.  You'll see later that when creating a Repository, the Mongo collection will be automatically initialized with any specified options.
 
 #### Property definition
 
-To save and restore individual properties of the class, they must be annotated with @Property() or one of its specializations -- like @ObjectIdProperty() or @IntProperty().  By default, an annotated property will be mapped to the database as-is.
+To save and restore individual properties of the class, they must be annotated with `@Property()` or one of its specializations -- like `@ObjectIdProperty()` or `@IntProperty()`.  By default, an annotated property will be mapped to the database as-is.
 
 A property can be renamed to something else when stored in the database be using the "name" option.
 
@@ -88,7 +88,7 @@ class StringConverter extends PropertyConverter {
       case 'string':
         return value
       default:
-        throw new Error('This converter doesn't know how to handle that value!')
+        throw new Error("This converter doesn't know how to handle that value!")
     }
   }
   
@@ -96,7 +96,7 @@ class StringConverter extends PropertyConverter {
     if (value === undefined) {
       return undefined
     } else if (typeof value !== 'string') {
-      throw new Error('I wasn't expecting to get a non-string value out of the database!')
+      throw new Error("I wasn't expecting to get a non-string value out of the database!")
     }
     
     switch (targetType) {
@@ -105,7 +105,7 @@ class StringConverter extends PropertyConverter {
       case Number:
         return parseFloat(value)
       default:
-        throw new Error('I can't handle converting the value to that type of variable!')
+        throw new Error("I can't handle converting the value to that type of variable!")
     }
   }
   
@@ -120,7 +120,7 @@ The above class will a string or number value and always persist it as a string 
 
 #### Built-in property converters
 
-You may have noticed that we used several variations of @Property() and custom converters in DogDocument.  These are all built-in property converters that are available in Deco-Mongo.  For convenience, most of the built-in converters have decorators associated with them.  That means that:
+You may have noticed that we used several variations of `@Property()` and custom converters in DogDocument.  These are all built-in property converters that are available in Deco-Mongo.  For convenience, most of the built-in converters have decorators associated with them.  That means that:
 
 ```typescript
 @Property({ converter: new IntConverter() })
@@ -146,9 +146,9 @@ Here's the full list of converters:
 
 #### Timestamp properties
 
-You may have also noticed that the lastModified property in DogDocument uses the @UpdateTimestamp() decorator.  This decorator is used to indicate that the property is a timestamp that should be automatically set to the date at the time the that record is mapped for insertion or update.
+You may have also noticed that the lastModified property in DogDocument uses the `@UpdateTimestamp()` decorator.  This decorator is used to indicate that the property is a timestamp that should be automatically set to the date at the time the that record is mapped for insertion or update.
 
-There is a similar @CreationTimestamp() decorator, which will be automatically set when a document is inserted, but left untouched after that.
+There is a similar `@CreationTimestamp()` decorator, which will be automatically set when a document is inserted, but left untouched after that.
 
 #### Unique document IDs
 
@@ -207,7 +207,7 @@ async function update(id: string, dog: DogDocument) {
 }
 ```
 
-When mapping for an update, we're not assuming any knowledge of what the document looks like in the database -- it just overwrites everything except for the \_id and any creation timestamps.  Creation of partial update documents isn't supported at this time, though you can map selected fields by using mapPartialToDb(), which we did to convert the ID used to find the document that we updated.
+When mapping for an update, we're not assuming any knowledge of what the document looks like in the database -- it just overwrites everything except for the ID and any creation timestamps.  Creation of partial update documents isn't supported at this time, though you can map selected fields by using `mapPartialToDb()`, which we did to convert the ID used to find the document that we updated.
 
 #### Creating a repository
 
@@ -233,7 +233,7 @@ MongoDB supports using a JSON Schema for validation, but it's best used as a bac
 
 #### Consider using class-transformer to map objects to classes
 
-If you have data coming in over the network or from any external source, you'll probably have a need to turn some plain Javascript objects into class instances in order to work with them in your domain layer and with Deco-Mongo.  You could do the conversion manually, but [class-transformer](https://www.npmjs.com/package/class-transformer) can save you some trouble.
+If you have data coming in over the network or from any external source, you'll probably have a need to turn some plain Javascript objects into class instances in order to work with them in Deco-Mongo -- and possibly in your domain layer.  You could do the conversion manually, but [class-transformer](https://www.npmjs.com/package/class-transformer) can save you some trouble.
 
 #### Consider data upgrade
 
