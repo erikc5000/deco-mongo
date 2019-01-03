@@ -26,15 +26,13 @@ export class PropertiesMetadata {
 
     push(property: MappedProperty) {
         if (this.keyMap.has(property.keyName)) {
-            throw new Error(
-                `'${String(property.keyName)}' has more than one @Property() decorator.`
-            )
+            throw new Error(`'${property.keyName}' has more than one @Property() decorator.`)
         }
 
         if (this.reverseKeyMap.has(property.mappedKeyName)) {
             throw new Error(
                 `Multiple properties are mapped to the name ` +
-                    `'${String(property.mappedKeyName)}'.  Check @Property() definitions.`
+                    `'${property.mappedKeyName}'.  Check @Property() definitions.`
             )
         }
 
@@ -71,7 +69,7 @@ export class PropertiesMetadata {
         const property = this.keyMap.get(keyName)
 
         if (!property) {
-            throw new Error(`Invalid key name '${String(keyName)}'`)
+            throw new Error(`Invalid key name '${keyName}'`)
         }
 
         return property
