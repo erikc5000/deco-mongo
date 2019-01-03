@@ -64,8 +64,7 @@ export class MappedProperty {
                 `The type '${MappedProperty.getTypeString(this.type)}' is ` +
                 `incompatible with the specified converter.`
 
-            const supportedTypes = this.converter
-                .getSupportedTypes()
+            const supportedTypes = this.converter.supportedTypes
                 .map(value => MappedProperty.getTypeString(value))
                 .join(', ')
 

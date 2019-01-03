@@ -7,7 +7,7 @@ import { ClassType } from '../interfaces'
  */
 export class NestedConverter<T extends object> extends PropertyConverter {
     private readonly mapper: Mapper<T>
-    private supportedTypes?: any[]
+    private cachedSupportedTypes?: any[]
 
     /**
      * Construct a new nested property converter
@@ -49,18 +49,18 @@ export class NestedConverter<T extends object> extends PropertyConverter {
     }
 
     getSupportedTypes() {
-        if (!this.supportedTypes) {
-            this.supportedTypes = [Array, Object, this.classType]
+        if (!this.cachedSupportedTypes) {
+            this.cachedSupportedTypes = [Array, Object, this.classType]
 
             for (
                 let parentClass = Object.getPrototypeOf(this.classType.prototype.constructor);
                 typeof parentClass.prototype !== 'undefined';
                 parentClass = Object.getPrototypeOf(parentClass.prototype.constructor)
             ) {
-                this.supportedTypes.push(parentClass)
+                this.cachedSupportedTypes.push(parentClass)
             }
         }
 
-        return this.supportedTypes
+        return this.cachedSupportedTypes
     }
 }

@@ -21,7 +21,7 @@ export abstract class PropertyConverter implements IPropertyConverter {
 
     /**
      * Returns true if the provided type is supported by this property converter.  By default, it
-     * checks if the type is in getSupportedTypes(), but this behavior may be overridden.
+     * checks if the type is in supportedTypes(), but this behavior may be overridden.
      * @param type The type of the property in the class definition
      */
     supportsType(type: any): boolean {
@@ -30,9 +30,18 @@ export abstract class PropertyConverter implements IPropertyConverter {
     }
 
     /**
-     * Returns a list of constructor functions for all supported types
+     * An array containing the constructor functions for all supported types.  An empty array
+     * indicates that there are no predefined type restrictions.
      */
-    getSupportedTypes(): any[] {
+    get supportedTypes(): Function[] {
+        return this.getSupportedTypes()
+    }
+
+    /**
+     * Returns an array containing the constructor functions for all supported types.  Intended
+     * to be overridden in subclasses to place restrictions on allowed types.
+     */
+    protected getSupportedTypes(): Function[] {
         return []
     }
 }
