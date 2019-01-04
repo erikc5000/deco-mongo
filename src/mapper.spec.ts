@@ -325,6 +325,34 @@ describe('mapper', () => {
         })
     })
 
+    describe('map id for filter', () => {
+        const objectId = new ObjectID()
+        const stringId = objectId.toHexString()
+
+        it('returns an object containing just the mapped ID field', () => {
+            class CatDocument {
+                @ObjectIdProperty({ name: '_id' })
+                id: string = stringId
+
+                @Property()
+                name?: string
+            }
+
+            const mapper = new Mapper(CatDocument)
+            expect(mapper.mapIdForFilter(stringId)).toStrictEqual({ _id: new ObjectID(stringId) })
+        })
+
+        it('throws an exception if no _id property exists', () => {
+            class DogDocument {
+                @Property()
+                name?: string
+            }
+
+            const mapper = new Mapper(DogDocument, { nested: true })
+            expect(() => mapper.mapIdForFilter(stringId)).toThrow(Error)
+        })
+    })
+
     describe('map from result', () => {
         const objectId = new ObjectID()
         const modifiedDate = new Date()

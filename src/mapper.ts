@@ -1,7 +1,6 @@
 import { ClassType } from './interfaces'
 import { getPropertiesMetadata, PropertiesMetadata } from './internal/metadata/properties.metadata'
 import 'reflect-metadata'
-import { MappedProperty } from './internal/mapped-property'
 
 export interface MapForUpdateOptions {
     upsert?: boolean
@@ -86,6 +85,18 @@ export class Mapper<T extends object> {
         }
 
         return this.populateTimestampsForUpdate(updateOp, options && options.upsert)
+    }
+
+    mapIdForFilter(id: any): any {
+        const idProperty = this.properties.getId()
+
+        if (!idProperty) {
+            throw new Error(`No '_id' property exists on ${this.classType.name}.`)
+        }
+
+        const filter: any = {}
+        filter[idProperty.mappedKeyName] = idProperty.toDb(id)
+        return filter
     }
 
     mapPartialToDb(object: Partial<T>): any
