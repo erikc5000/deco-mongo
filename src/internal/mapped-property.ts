@@ -1,7 +1,6 @@
-import { PropertyOptions, TimestampType, ClassType } from '../interfaces'
+import { PropertyOptions, TimestampType } from '../interfaces'
 import { PropertyConverter } from '../property-converter'
 import { CustomPropertyConverter } from './custom-property-converter'
-import { DefaultConverter } from '../property-converters'
 
 export interface ValidateResult {
     valid: boolean
@@ -13,8 +12,6 @@ export class MappedProperty {
     private readonly timestampType?: TimestampType
     private readonly converter: PropertyConverter
 
-    private static readonly defaultConverter = new DefaultConverter()
-
     constructor(
         readonly keyName: string,
         private readonly type: any,
@@ -24,7 +21,7 @@ export class MappedProperty {
         this.timestampType = options.timestamp
 
         if (options.converter == null) {
-            this.converter = MappedProperty.defaultConverter
+            this.converter = new PropertyConverter()
         } else if (options.converter instanceof PropertyConverter) {
             this.converter = options.converter
         } else if (typeof options.converter === 'object') {

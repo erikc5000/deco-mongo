@@ -1,15 +1,21 @@
 import { IPropertyConverter } from './interfaces'
 
 /**
- * Transforms the value of a property when storing and retrieving data from a database.
+ * Transforms the value of a property when storing and retrieving data from a database.  By
+ * default, the same value is kept when going to and from the database. Where possible, it checks
+ * the property type when converting from the database to protect against values that would violate
+ * the expectations of the class.  By design, there is no implicit conversion -- a custom converter
+ * must be used to deal with incompatible types.
  */
-export abstract class PropertyConverter implements IPropertyConverter {
+export class PropertyConverter implements IPropertyConverter {
     /**
      * Change the value of a class property to a different value when it is stored in the database.
      * If not defined, the original value will be preserved.
      * @param value The value to be mapped
      */
-    abstract toDb(value: any): any
+    toDb(value: any) {
+        return value
+    }
 
     /**
      * Populate the value of a class property based on the value retrieved from the database.  If
@@ -17,7 +23,38 @@ export abstract class PropertyConverter implements IPropertyConverter {
      * @param value The value to be mapped
      * @param targetType The type expected by the class's property
      */
-    abstract fromDb(value: any, targetType?: any): any
+    fromDb(value: any, targetType?: any): any {
+        if (value === undefined) {
+            return undefined
+        }
+
+        switch (targetType) {
+            case Boolean:
+                if (typeof value !== 'boolean') {
+                    throw new Error('Expected a boolean value')
+                }
+                break
+            case Number:
+                if (typeof value !== 'number') {
+                    throw new Error('Expected a number value')
+                }
+                break
+            case String:
+                if (typeof value !== 'string') {
+                    throw new Error('Expected a string value')
+                }
+                break
+            case Array:
+                if (!Array.isArray(value)) {
+                    throw new Error('Expected an array')
+                }
+                break
+            case Function:
+                throw new Error('Database values cannot be restored into a function')
+        }
+
+        return value
+    }
 
     /**
      * Returns true if the provided type is supported by this property converter.  By default, it

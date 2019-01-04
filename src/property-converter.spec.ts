@@ -1,7 +1,7 @@
-import { DefaultConverter } from './default.converter'
+import { PropertyConverter } from './property-converter'
 
-describe('default converter', () => {
-    const converter = new DefaultConverter()
+describe('property converter', () => {
+    const converter = new PropertyConverter()
 
     describe('to DB', () => {
         it.each([undefined, null, 6.5, 'a string', { field: 1 }, true])(

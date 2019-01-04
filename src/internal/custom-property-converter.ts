@@ -11,18 +11,13 @@ export class CustomPropertyConverter extends PropertyConverter {
     }
 
     toDb(value: any): any {
-        if (this.converter.toDb) {
-            return this.converter.toDb(value)
-        }
-
-        return value
+        return this.converter.toDb ? this.converter.toDb(value) : value
     }
 
     fromDb(value: any, targetType?: any): any {
-        if (this.converter.fromDb) {
-            return this.converter.fromDb(value, targetType)
-        }
-
-        return value
+        return super.fromDb(
+            this.converter.fromDb ? this.converter.fromDb(value, targetType) : value,
+            targetType
+        )
     }
 }
