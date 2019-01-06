@@ -9,19 +9,15 @@ const objectIdConverter = new ObjectIdConverter()
 const autoGenObjectIdConverter = new ObjectIdConverter({ autoGenerate: true })
 
 /** Get an ObjectID converter from the pool, if possible.  Otherwise, create one. */
-function getConverter(options?: ObjectIdPropertyOptions) {
-    if (options) {
-        switch (options.autoGenerate) {
-            case undefined:
-            case false:
-                return objectIdConverter
-            case true:
-                return autoGenObjectIdConverter
-            default:
-                return new ObjectIdConverter({ autoGenerate: options.autoGenerate })
-        }
-    } else {
-        return objectIdConverter
+function getConverter(options: ObjectIdPropertyOptions) {
+    switch (options.autoGenerate) {
+        case undefined:
+        case false:
+            return objectIdConverter
+        case true:
+            return autoGenObjectIdConverter
+        default:
+            return new ObjectIdConverter({ autoGenerate: options.autoGenerate })
     }
 }
 
@@ -29,9 +25,6 @@ function getConverter(options?: ObjectIdPropertyOptions) {
  * A Mongo ObjectID property
  * @param options Options that control how the property is mapped
  */
-export function ObjectIdProperty(options?: ObjectIdPropertyOptions) {
-    return Property({
-        converter: getConverter(options),
-        ...options
-    })
+export function ObjectIdProperty(options: ObjectIdPropertyOptions = {}) {
+    return Property({ converter: getConverter(options), ...options })
 }
