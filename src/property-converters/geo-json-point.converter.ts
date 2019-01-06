@@ -1,6 +1,11 @@
 import { PropertyConverter } from '../property-converter'
 import { CoordType, GeoJsonPoint } from '../interfaces'
-import { isCoordinates, isGeoJsonPoint, toLongLat } from '../internal/geospatial-util'
+import {
+    isCoordinates,
+    isGeoJsonPoint,
+    coordinatesToLongLat,
+    reverseCoordinates
+} from '../internal/geospatial-util'
 
 export interface GeoJsonPointConverterOptions {
     coordType: CoordType
@@ -24,7 +29,7 @@ export class GeoJsonPointConverter extends PropertyConverter {
         }
 
         const location: GeoJsonPoint = {
-            coordinates: toLongLat(value, this.options.coordType),
+            coordinates: coordinatesToLongLat(value, this.options.coordType),
             type: 'Point'
         }
 
@@ -43,7 +48,7 @@ export class GeoJsonPointConverter extends PropertyConverter {
         }
 
         return this.options.coordType === CoordType.LatLong
-            ? [value.coordinates[1], value.coordinates[0]]
+            ? reverseCoordinates(value.coordinates)
             : value.coordinates
     }
 
