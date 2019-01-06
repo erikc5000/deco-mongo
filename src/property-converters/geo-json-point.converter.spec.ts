@@ -1,4 +1,5 @@
-import { GeoJsonPointConverter, CoordType } from './geo-json-point.converter'
+import { GeoJsonPointConverter } from './geo-json-point.converter'
+import { CoordType } from '../interfaces'
 
 describe('GeoJSON point converter', () => {
     describe('to DB', () => {
@@ -68,11 +69,11 @@ describe('GeoJSON point converter', () => {
         )
 
         describe('with Array target type', () => {
-            it('converts GeoJSON locations to [latitude, longitude], irrespective of type', () => {
+            it('converts GeoJSON points to [latitude, longitude]', () => {
                 const converter = new GeoJsonPointConverter()
 
                 const fromDbValue = converter.fromDb(
-                    { coordinates: [45.0, 40.0], type: 'NotAPoint' },
+                    { coordinates: [45.0, 40.0], type: 'Point' },
                     Array
                 )
                 expect(fromDbValue).toBeInstanceOf(Array)
@@ -81,11 +82,11 @@ describe('GeoJSON point converter', () => {
                 expect(fromDbValue![1]).toBe(45.0)
             })
 
-            it('converts GeoJSON locations to [longitude, latitude], irrespective of type', () => {
+            it('converts GeoJSON locations to [longitude, latitude]', () => {
                 const converter = new GeoJsonPointConverter({ coordType: CoordType.LongLat })
 
                 const fromDbValue = converter.fromDb(
-                    { coordinates: [45.0, 40.0], type: 'Point?' },
+                    { coordinates: [45.0, 40.0], type: 'Point' },
                     Array
                 )
                 expect(fromDbValue).toBeInstanceOf(Array)
@@ -99,7 +100,7 @@ describe('GeoJSON point converter', () => {
             'with unsupported target type (%p)',
             targetType => {
                 const converter = new GeoJsonPointConverter()
-                const value = { coordinates: [45.0, 40.0], type: 'NotAPoint' }
+                const value = { coordinates: [45.0, 40.0], type: 'Point' }
 
                 it('throws an exception', () => {
                     expect(() => converter.fromDb(value, targetType)).toThrow(Error)

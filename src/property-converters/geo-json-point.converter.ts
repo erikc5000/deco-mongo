@@ -1,37 +1,9 @@
 import { PropertyConverter } from '../property-converter'
-
-interface GeoJsonLocation {
-    coordinates: [number, number]
-    type: string
-}
-
-type Coordinates = [number, number]
-
-export const enum CoordType {
-    LatLong,
-    LongLat
-}
+import { CoordType, GeoJsonPoint } from '../interfaces'
+import { isCoordinates, isGeoJsonPoint, toLongLat } from '../internal/geospatial-util'
 
 export interface GeoJsonPointConverterOptions {
     coordType: CoordType
-}
-
-function isCoordinates(value: any): value is Coordinates {
-    return (
-        Array.isArray(value) &&
-        value.length === 2 &&
-        typeof value[0] === 'number' &&
-        typeof value[1] === 'number'
-    )
-}
-
-function isGeoJsonLocation(value: any): value is GeoJsonLocation {
-    return (
-        typeof value === 'object' &&
-        value != null &&
-        typeof value.type === 'string' &&
-        isCoordinates(value.coordinates)
-    )
 }
 
 /**
@@ -51,11 +23,8 @@ export class GeoJsonPointConverter extends PropertyConverter {
             throw new Error(`Expected an array containing '[number, number]'`)
         }
 
-        const location: GeoJsonLocation = {
-            coordinates:
-                this.options.coordType === CoordType.LatLong
-                    ? [value[1], value[0]]
-                    : [value[0], value[1]],
+        const location: GeoJsonPoint = {
+            coordinates: toLongLat(value, this.options.coordType),
             type: 'Point'
         }
 
@@ -65,8 +34,8 @@ export class GeoJsonPointConverter extends PropertyConverter {
     fromDb(value: any, targetType?: any) {
         if (value === undefined) {
             return undefined
-        } else if (!isGeoJsonLocation(value)) {
-            throw new Error('Expected a valid GeoJSON location')
+        } else if (!isGeoJsonPoint(value)) {
+            throw new Error('Expected a GeoJSON Point')
         }
 
         if (targetType !== Array) {
