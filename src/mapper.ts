@@ -17,7 +17,7 @@ export interface MapperOptions {
 }
 
 /**
- * Map objects between their in-memory and database representations.
+ * Maps documents between their in-memory and database representations.
  */
 export class Mapper<T extends object> {
     private readonly properties: PropertiesMetadata
@@ -26,7 +26,7 @@ export class Mapper<T extends object> {
         const properties = getPropertiesMetadata(this.classType)
 
         if (!properties) {
-            throw new Error(`No properties are defined on ${classType}.`)
+            throw new Error(`No properties are defined on ${classType.name}.`)
         }
 
         this.properties = properties
@@ -58,7 +58,7 @@ export class Mapper<T extends object> {
 
     mapForUpdate(document: T, options?: MapForUpdateOptions): UpdateOperation
     mapForUpdate(documents: T[], options?: MapForUpdateOptions): UpdateOperation[]
-    mapForUpdate(document: T | T[], options?: MapForUpdateOptions): any {
+    mapForUpdate(document: T | T[], options: MapForUpdateOptions = {}): any {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForUpdate(element), options)
         } else if (!(document instanceof this.classType)) {
@@ -84,10 +84,10 @@ export class Mapper<T extends object> {
             }
         }
 
-        return this.populateTimestampsForUpdate(updateOp, options && options.upsert)
+        return this.populateTimestampsForUpdate(updateOp, options.upsert)
     }
 
-    mapIdForFilter(id: any): any {
+    mapIdToDb(id: any): any {
         const idProperty = this.properties.getId()
 
         if (!idProperty) {
@@ -97,6 +97,10 @@ export class Mapper<T extends object> {
         const filter: any = {}
         filter[idProperty.mappedKeyName] = idProperty.toDb(id)
         return filter
+    }
+
+    mapPropertyNameToDb<K extends Extract<keyof T, string>>(name: K) {
+        return this.properties.get(name).mappedKeyName
     }
 
     mapPartialToDb(object: Partial<T>): any

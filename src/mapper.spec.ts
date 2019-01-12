@@ -325,7 +325,7 @@ describe('mapper', () => {
         })
     })
 
-    describe('map id for filter', () => {
+    describe('map ID to DB', () => {
         const objectId = new ObjectID()
         const stringId = objectId.toHexString()
 
@@ -339,7 +339,7 @@ describe('mapper', () => {
             }
 
             const mapper = new Mapper(CatDocument)
-            expect(mapper.mapIdForFilter(stringId)).toStrictEqual({ _id: new ObjectID(stringId) })
+            expect(mapper.mapIdToDb(stringId)).toStrictEqual({ _id: new ObjectID(stringId) })
         })
 
         it('throws an exception if no _id property exists', () => {
@@ -349,7 +349,7 @@ describe('mapper', () => {
             }
 
             const mapper = new Mapper(DogDocument, { nested: true })
-            expect(() => mapper.mapIdForFilter(stringId)).toThrow(Error)
+            expect(() => mapper.mapIdToDb(stringId)).toThrow(Error)
         })
     })
 

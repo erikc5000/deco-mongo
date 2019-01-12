@@ -1,5 +1,6 @@
+export * from './dao'
 export * from './decorators'
-export * from './repository'
+export * from './mapped-collection'
 export * from './interfaces'
 export * from './property-converter'
 export * from './property-converters'
