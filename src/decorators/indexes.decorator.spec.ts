@@ -15,25 +15,25 @@ describe('indexes decorator', () => {
             expect(metadata).toHaveLength(1)
         })
 
-        it('should not have metadata when provided with an empty array', () => {
+        it('should have empty metadata when provided with an empty array', () => {
             @Indexes()
             class NonIndexedDogDocument {
                 breed?: string
             }
 
             const metadata = getIndexesMetadata(NonIndexedDogDocument)
-            expect(metadata).toBeUndefined()
+            expect(metadata).toEqual([])
         })
     })
 
     describe('undecorated class', () => {
-        it('should not have metadata', () => {
+        it('should have empty metadata', () => {
             class UndecoratedDogDocument {
                 breed?: string
             }
 
             const metadata = getIndexesMetadata(UndecoratedDogDocument)
-            expect(metadata).toBeUndefined()
+            expect(metadata).toEqual([])
         })
     })
 

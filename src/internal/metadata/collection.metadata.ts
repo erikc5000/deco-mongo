@@ -7,6 +7,10 @@ export interface CollectionMetadata {
     options?: CollectionOptions
 }
 
-export function getCollectionMetadata<T extends object>(classType: ClassType<T>) {
-    return Reflect.getOwnMetadata(COLLECTION_KEY, classType) as CollectionMetadata | undefined
+export function getCollectionMetadata<T extends object>(
+    classType: ClassType<T>
+): CollectionMetadata | undefined {
+    if (Reflect.hasOwnMetadata(COLLECTION_KEY, classType)) {
+        return Reflect.getOwnMetadata(COLLECTION_KEY, classType)
+    }
 }

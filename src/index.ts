@@ -1,4 +1,5 @@
 export * from './dao'
+export * from './deco-mongo'
 export * from './decorators'
 export * from './mapped-collection'
 export * from './interfaces'

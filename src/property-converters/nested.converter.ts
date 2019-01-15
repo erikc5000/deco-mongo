@@ -54,7 +54,7 @@ export class NestedConverter<T extends object> extends PropertyConverter {
 
             for (
                 let parentClass = Object.getPrototypeOf(this.classType.prototype.constructor);
-                typeof parentClass.prototype !== 'undefined';
+                parentClass.prototype !== undefined;
                 parentClass = Object.getPrototypeOf(parentClass.prototype.constructor)
             ) {
                 this.cachedSupportedTypes.push(parentClass)

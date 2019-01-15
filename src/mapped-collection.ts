@@ -1,10 +1,5 @@
 import * as mongo from 'mongodb'
-import {
-    GeoJsonPoint,
-    GeoJsonGeometry,
-    GeoJsonPolygon,
-    GeoJsonMultiPolygon
-} from './interfaces/index'
+import { GeoJsonPoint, GeoJsonGeometry, GeoJsonPolygon, GeoJsonMultiPolygon } from './interfaces'
 import { Mapper } from './mapper'
 
 export type MongoDeleteOneOptions = mongo.CommonOptions & { bypassDocumentValidation?: boolean }
