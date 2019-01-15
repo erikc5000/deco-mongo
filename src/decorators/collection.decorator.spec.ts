@@ -11,18 +11,18 @@ describe('collection decorator', () => {
 
             const metadata = getCollectionMetadata(CatDocument)
             expect(metadata).toBeDefined()
-            expect(metadata.name).toBe('cats')
-            expect(metadata.options).toBeUndefined()
+            expect(metadata!.name).toBe('cats')
+            expect(metadata!.options).toBeUndefined()
         })
     })
 
     describe('undecorated class', () => {
-        it('throws an exception when attempting to access the metadata', () => {
+        it('should not have metadata', () => {
             class UndecoratedCat {
                 name?: string
             }
 
-            expect(() => getCollectionMetadata(UndecoratedCat)).toThrow(Error)
+            expect(getCollectionMetadata(UndecoratedCat)).toBeUndefined()
         })
     })
 

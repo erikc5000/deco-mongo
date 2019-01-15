@@ -19,7 +19,13 @@ export class Dao<T extends object> {
     }
 
     static async forDatabase<T extends object>(classType: ClassType<T>, db: mongo.Db) {
-        const { name, options } = getCollectionMetadata(classType)
+        const collectionMetadata = getCollectionMetadata(classType)
+
+        if (!collectionMetadata) {
+            throw new Error(`${classType.name} has no @Collection() decorator`)
+        }
+
+        const { name, options } = collectionMetadata
         const collExists = await collectionExists(name, db)
         let collection: mongo.Collection
 

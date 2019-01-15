@@ -5,7 +5,7 @@ import {
     getPropertiesMetadata
 } from '../internal/metadata/properties.metadata'
 import { PropertyOptions } from '../interfaces'
-import { MappedProperty } from '../internal/mapped-property'
+import { PropertyMetadata } from '../internal/metadata/property.metadata'
 
 /**
  * Indicates a relationship between a class property and a document in the database
@@ -21,6 +21,6 @@ export function Property(options?: PropertyOptions) {
         }
 
         const type = Reflect.getMetadata('design:type', target, propertyKey)
-        properties.push(new MappedProperty(String(propertyKey), type, options))
+        properties.push(new PropertyMetadata(String(propertyKey), type, options))
     }
 }

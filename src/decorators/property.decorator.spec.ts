@@ -1,7 +1,7 @@
 import { getPropertiesMetadata, PropertiesMetadata } from '../internal/metadata/properties.metadata'
 import { Property } from './property.decorator'
 import { ObjectID } from 'bson'
-import { MappedProperty } from '../internal/mapped-property'
+import { PropertyMetadata } from '../internal/metadata/property.metadata'
 import { PropertyConverter } from '../property-converter'
 
 describe('property decorator', () => {
@@ -26,7 +26,7 @@ describe('property decorator', () => {
             expect(properties!.withUpdateTimestamp()).toHaveLength(0)
             expect(properties!.withoutTimestamp()).toHaveLength(2)
 
-            let allProperties: MappedProperty[] = []
+            let allProperties: PropertyMetadata[] = []
             for (const property of properties!.all()) allProperties = allProperties.concat(property)
             expect(allProperties).toHaveLength(2)
         })
@@ -37,7 +37,7 @@ describe('property decorator', () => {
                 const properties = getPropertiesMetadata(BirdDocument)
 
                 const property = properties!.get(propertyName)
-                expect(property).toBeInstanceOf(MappedProperty)
+                expect(property).toBeInstanceOf(PropertyMetadata)
                 expect(property).toEqual(properties!.getFromMappedKey(propertyName))
                 expect(property.keyName).toBe(propertyName)
                 expect(property.mappedKeyName).toBe(propertyName)
@@ -60,7 +60,7 @@ describe('property decorator', () => {
             expect(properties!.hasMappedKey('_id')).toBeTruthy()
 
             const property = properties!.get('id')
-            expect(property).toBeInstanceOf(MappedProperty)
+            expect(property).toBeInstanceOf(PropertyMetadata)
             expect(property).toEqual(properties!.getFromMappedKey('_id'))
             expect(property.keyName).toBe('id')
             expect(property.mappedKeyName).toBe('_id')

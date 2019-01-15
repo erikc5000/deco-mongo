@@ -1,13 +1,13 @@
-import { PropertyOptions, TimestampType } from '../interfaces'
-import { PropertyConverter } from '../property-converter'
-import { CustomPropertyConverter } from './custom-property-converter'
+import { PropertyOptions, TimestampType } from '../../interfaces'
+import { PropertyConverter } from '../../property-converter'
+import { CustomPropertyConverter } from '../custom-property-converter'
 
 export interface ValidateResult {
     valid: boolean
     error?: string
 }
 
-export class MappedProperty {
+export class PropertyMetadata {
     readonly mappedKeyName: string
     private readonly timestampType?: TimestampType
     private readonly converter: PropertyConverter
@@ -58,11 +58,11 @@ export class MappedProperty {
     validate(): ValidateResult {
         if (!this.converter.supportsType(this.type)) {
             let message =
-                `The type '${MappedProperty.getTypeString(this.type)}' is ` +
+                `The type '${PropertyMetadata.getTypeString(this.type)}' is ` +
                 `incompatible with the specified converter.`
 
             const supportedTypes = this.converter.supportedTypes
-                .map(value => MappedProperty.getTypeString(value))
+                .map(value => PropertyMetadata.getTypeString(value))
                 .join(', ')
 
             if (supportedTypes.length > 0) {

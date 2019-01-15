@@ -1,30 +1,30 @@
-import { MappedProperty } from '../mapped-property'
+import { PropertyMetadata } from './property.metadata'
 import { ClassType } from '../../interfaces'
 
 export const PROPERTIES_KEY = Symbol('decoMongo:properties')
 
 export class PropertiesMetadata {
-    private readonly keyMap = new Map<string, MappedProperty>()
-    private readonly reverseKeyMap = new Map<string, MappedProperty>()
-    private readonly allProperties: MappedProperty[] = []
-    private readonly nonTimestamps: MappedProperty[] = []
-    private readonly createTimestamps: MappedProperty[] = []
-    private readonly updateTimestamps: MappedProperty[] = []
-    readonly parentMetadata?: PropertiesMetadata
+    private readonly keyMap = new Map<string, PropertyMetadata>()
+    private readonly reverseKeyMap = new Map<string, PropertyMetadata>()
+    private readonly allProperties: PropertyMetadata[] = []
+    private readonly nonTimestamps: PropertyMetadata[] = []
+    private readonly createTimestamps: PropertyMetadata[] = []
+    private readonly updateTimestamps: PropertyMetadata[] = []
+    readonly parent?: PropertiesMetadata
 
     constructor(classType: ClassType<any>) {
         const parentClass = Object.getPrototypeOf(classType.prototype.constructor)
 
-        if (typeof parentClass.prototype !== 'undefined') {
-            this.parentMetadata = getPropertiesMetadata(parentClass)
+        if (parentClass.prototype !== undefined) {
+            this.parent = getPropertiesMetadata(parentClass)
 
-            if (this.parentMetadata) {
-                this.parentMetadata.all().forEach(property => this.push(property))
+            if (this.parent) {
+                this.parent.all().forEach(property => this.push(property))
             }
         }
     }
 
-    push(property: MappedProperty) {
+    push(property: PropertyMetadata) {
         if (this.keyMap.has(property.keyName)) {
             throw new Error(`'${property.keyName}' has more than one @Property() decorator.`)
         }
@@ -100,6 +100,6 @@ export class PropertiesMetadata {
     }
 }
 
-export function getPropertiesMetadata<T>(classType: ClassType<T>) {
+export function getPropertiesMetadata<T extends object>(classType: ClassType<T>) {
     return Reflect.getOwnMetadata(PROPERTIES_KEY, classType) as PropertiesMetadata | undefined
 }
