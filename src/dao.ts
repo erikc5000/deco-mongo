@@ -24,14 +24,14 @@ export class Dao<T extends object> {
         return await this.collection.insertOne(document)
     }
 
-    async replace(id: any, newContent: T, options: ReplaceOptions = {}): Promise<T> {
+    async replace(id: any, newContent: T, options: ReplaceOptions = {}) {
         return await this.collection.findByIdAndUpdate(id, newContent, {
             upsert: options.upsert,
             returnOriginal: false
         })
     }
 
-    async delete(id: any): Promise<void> {
+    async delete(id: any) {
         return await this.collection.deleteById(id)
     }
 

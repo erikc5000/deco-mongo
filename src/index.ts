@@ -1,6 +1,7 @@
 export * from './dao'
 export * from './deco-mongo'
 export * from './decorators'
+export * from './errors'
 export * from './mapped-collection'
 export * from './interfaces'
 export * from './property-converter'

@@ -1,6 +1,7 @@
 import * as mongo from 'mongodb'
 import { GeoJsonPoint, GeoJsonGeometry, GeoJsonPolygon, GeoJsonMultiPolygon } from './interfaces'
 import { Mapper } from './mapper'
+import { InsertionError, UpdateError } from './errors'
 
 export type MongoDeleteOneOptions = mongo.CommonOptions & { bypassDocumentValidation?: boolean }
 
@@ -52,7 +53,7 @@ export class MappedCollection<T extends object> {
         const result = await this.collection.insertOne(mappedDoc, options)
 
         if (result.insertedCount !== 1 || result.ops.length < 1) {
-            throw new Error('Insert failed!')
+            throw new InsertionError(result)
         }
 
         return this.mapper.mapFromResult(result.ops[0])
@@ -69,7 +70,7 @@ export class MappedCollection<T extends object> {
         const result = await this.collection.insertMany(mappedDocs, options)
 
         if (result.insertedCount !== documents.length || result.ops.length < documents.length) {
-            throw new Error('Insert failed')
+            throw new InsertionError(result)
         }
 
         return this.mapper.mapFromResults(result.ops)
@@ -100,14 +101,14 @@ export class MappedCollection<T extends object> {
         const result = await this.collection.findOneAndUpdate(filter, update, options)
 
         if (result.ok !== 1 || result.value == null) {
-            throw new Error('Update failed!')
+            throw new UpdateError(result)
         }
 
         return this.mapper.mapFromResult(result.value)
     }
 
     /**
-     * Delete a document by ID.
+     * Delete a document by ID.  Returns `true` on success or `false` on failure.
      * @param id The unmapped ID value
      */
     async deleteById(id: any, options?: MongoDeleteOneOptions) {
@@ -115,15 +116,12 @@ export class MappedCollection<T extends object> {
     }
 
     /**
-     * Delete a document.
+     * Delete a document.  Returns `true` on success or `false` on failure.
      * @param filter A MongODB filter object
      */
     async deleteOne(filter: any, options?: MongoDeleteOneOptions) {
         const result = await this.collection.deleteOne(filter, options)
-
-        if (result.deletedCount !== 1) {
-            throw new Error('Delete failed!')
-        }
+        return result.deletedCount === 1 ? true : false
     }
 
     /**
