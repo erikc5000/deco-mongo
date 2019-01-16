@@ -67,7 +67,7 @@ export class DogDocument implements Dog {
         converter: {
             fromDb: value => {
                 switch (typeof value) {
-                    case 'string:
+                    case 'string':
                         return value === 'true' ? true : false
                     case 'boolean':
                         return value
@@ -121,7 +121,7 @@ The value of a property can also be modified through the use of a property conve
     converter: {
         fromDb: value => {
             switch (typeof value) {
-                case 'string:
+                case 'string':
                     return value === 'true' ? true : false
                 case 'boolean':
                     return value
@@ -227,26 +227,56 @@ id?: string
 
 While somewhat less performant than ObjectIDs, UUIDs are more standard and versatile. Both are well-supported by Deco-Mongo.
 
-#### Initializing a collection
+### Initializing a collection
 
-Deco-Mongo functions as a mapping layer on top of the MongoDB driver rather than replacing it entirely.  You must first establish a connection using the MongoDB driver:
+Deco-Mongo functions as a mapping layer on top of the MongoDB driver rather than replacing it entirely.  You must first establish a connection using the MongoDB driver, which is simple enough:
 
-'''typescript
+```typescript
+import { MongoClient, Db } from 'mongodb'
+
 const client: MongoClient = await MongoClient.connect('mongodb://localhost')
 const db: Db = client.db('AppDB')
-'''
+```
 
 To initialize a collection using Deco-Mongo, you can do the following:
 
 ```typescript
+import { DecoMongo } from 'deco-mongo'
+
 const collection = await DecoMongo.initializeCollection(DogDocument, db)
 ```
+This will ensure that the collection is created with any indexes and options that you've specified.
 
-### Mapping documents
+### Creating a DAO
 
-So now that we've covered how to define a mapping between a class and a MongoDB document, it's time to look at how we can apply it.
+For each mapped document, it's recommended that you create a DAO, or Data Access Object, that provides the set of operations that are available when persisting and restoring your data. Deco-Mongo comes with a `Dao` class, which implements basic CRUD operations. It's designed to be extended, so you can write applicable queries for your use cases.
 
-At the lowest level, this can be done through the use of a `Mapper` object.
+```typescript
+export class DogsRepository extends Dao<DogDocument> {
+    async findNear(coords: [number, number], options: { maxDistance?: number, limit?: number } = {}) {
+        const geoJsonPoint = { type: 'Point', [coords[1], coords[0]] }
+        const cursor = this.collection.findNear('homeLocation', geoJsonPoint, options)
+        
+        if (options.limit) {
+            cursor.limit(options.limit)
+        }
+        
+        return await cursor.toArray()
+    }
+}
+```
+
+First of all, notice that we named this class "DogsRepository". Generally, a "DAO" is understood to be concerned with accessing individual entitities whereas a "repository" is a higher level construct that deals with aggregate roots. Indeed, a repository may be implemented using multiple DAOs. For simple applications and/or data structures, the distinction isn't very important -- call it what you will.
+
+[ TODO: Finish ]
+
+#### Mapped collection
+
+[ TODO: Write ]
+
+### Mapping operations
+
+At the lowest level, documents can be mapped through the use of a `Mapper` object.
 
 ```typescript
 const mapper = new Mapper(DogDocument)
@@ -291,10 +321,6 @@ async function update(id: string, dog: DogDocument) {
 ```
 
 When mapping for an update, we're not assuming any knowledge of what the document looks like in the database -- it just overwrites everything except for the ID and any creation timestamps. Creation of partial update documents isn't supported at this time, though you can map selected fields by using `mapPartialToDb()`, which we did to convert the ID used to find the document that we updated.
-
-#### Creating a DAO
-
-[Not finished]
 
 ## General Guidance
 
