@@ -2,15 +2,23 @@
 
 ## Description
 
-Deco-Mongo is a modern MongoDB ODM written in Typescript. By taking advantage of newer Javascript features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in my totally biased opinion, anyway. :smiley:
-
-This project is still early in its development with the initial focus on developing a mapping layer that enables conversion between in-memory Typescript classes and MongoDB documents. Changes are likely and documentation is a work in progress.
+Deco-Mongo is a lightweight and modern MongoDB ODM library intended for use in Typescript applications of all sizes. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
 
 ## Installation
 
-Clone the repository. From the directory you cloned it to, run "npm link". From the project you wish to use it in, run "npm link deco-mongo".
+In your Typescript application:
 
-Deco-Mongo will be made availalble on NPM once it's been flushed out a little more.
+```
+$ npm install deco-mongo mongodb reflect-metadata
+$ npm install -D @types/mongodb
+```
+
+Make sure that experimental decorator and metadata support are enabled in your tsconfig.json file:
+
+```json
+"experimentalDecorators": true,
+"emitDecoratorMetadata": true
+```
 
 ## Usage
 
@@ -29,6 +37,7 @@ export interface Dog {
 }
 
 @Collection('dogs')
+@Indexes({ key: { name: 1 }, unique: true })
 export class DogDocument implements Dog {
     @ObjectIdProperty({ name: '_id', autoGenerate: true })
     id?: string
@@ -60,6 +69,10 @@ export class DogDocument implements Dog {
 #### Collection definition
 
 The `@Collection()` decorator defines a link between DogDocument and a collection in Mongo named 'dogs'. You'll see later that when creating a Repository, the Mongo collection will be automatically initialized with any specified options.
+
+#### Indexes definition
+
+To define indexes within your code, you can use the `@Indexes()` decorator. The index specifications map directly to those that you would use in the [MongoDB shell](https://docs.mongodb.com/manual/reference/command/createIndexes/). By default, any indexes defined here will be created only if the collection doesn't already exist. This is to help prevent any accidents on production DBs.
 
 #### Property definition
 
@@ -167,7 +180,9 @@ While somewhat less performant than ObjectIDs, UUIDs are more standard and versa
 
 #### Mapping documents
 
-So far, we've looked only at how we define a mapping between a class and a Mongo document. To actually map documents, you'll currently have to use a Mapper. This is a relatively low-level construct, which is concerned solely with mapping documents. To perform inserts, updates, or queries, you'll have to use the MongoDB driver directly. Ultimately, you'll have the option of using a Repository, which will encapsulate the MongoDB driver functionality, providing a higher level interface. However, the Mapper should still be a useful tool for those who need to work at lower level in order to optimize their use of MongoDB.
+So now that we've covered how to define a mapping between a class and a MongoDB document, it's time to look at how we can apply it.
+
+At the lowest level, this can be done through the use of a `Mapper` object.
 
 ```typescript
 const mapper = new Mapper(DogDocument)
@@ -207,18 +222,18 @@ async function update(id: string, dog: DogDocument) {
     //   $unset: { breed: '', age: '', homeLocation: '' }
     // } as object
 
-    await db.collection('gyms').updateOne(filter, updateDoc)
+    await db.collection('dogs').updateOne(filter, updateDoc)
 }
 ```
 
 When mapping for an update, we're not assuming any knowledge of what the document looks like in the database -- it just overwrites everything except for the ID and any creation timestamps. Creation of partial update documents isn't supported at this time, though you can map selected fields by using `mapPartialToDb()`, which we did to convert the ID used to find the document that we updated.
 
-#### Creating a repository
+#### Creating a DAO
 
 [Not finished]
 
 ```typescript
-const dogsRepository = await Repository.create(DogDocument, db)
+const collection = await DecoMongo.initializeCollection(DogDocument, db)
 ```
 
 ## General Guidance
