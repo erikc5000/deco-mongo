@@ -3,6 +3,9 @@ import { getPropertiesMetadata, PropertiesMetadata } from './internal/metadata/p
 import 'reflect-metadata'
 
 export interface MapForUpdateOptions {
+    /**
+     * Prepare for an upsert operation, which will create the document if it doesn't exist already.
+     */
     upsert?: boolean
 }
 
@@ -33,6 +36,11 @@ export class Mapper<T extends object> {
         this.validateProperties(options)
     }
 
+    /**
+     * Map one or more documents to DB representation for insertion.  Any timestamps will updated
+     * as necessary.
+     * @param document A document or array of documents
+     */
     mapForInsert(document: T): any
     mapForInsert(documents: T[]): any[]
     mapForInsert(document: T | T[]): any {
@@ -56,6 +64,12 @@ export class Mapper<T extends object> {
         return this.populateTimestampsForInsert(mappedObject)
     }
 
+    /**
+     * Map one or more documents to DB representation in the form of an update operation suitable
+     * for use with updateOne() or findOneAndUpdate().  Any timestamps will be updated as needed.
+     * @param document A document or array of documents
+     * @param options Options
+     */
     mapForUpdate(document: T, options?: MapForUpdateOptions): UpdateOperation
     mapForUpdate(documents: T[], options?: MapForUpdateOptions): UpdateOperation[]
     mapForUpdate(document: T | T[], options: MapForUpdateOptions = {}): any {
@@ -87,6 +101,11 @@ export class Mapper<T extends object> {
         return this.populateTimestampsForUpdate(updateOp, options.upsert)
     }
 
+    /**
+     * Map an ID to an object containing the mapped property name and value, suitable for use as
+     * a filter.
+     * @param id An ID value
+     */
     mapIdToDb(id: any): any {
         const idProperty = this.properties.getId()
 
@@ -99,10 +118,20 @@ export class Mapper<T extends object> {
         return filter
     }
 
+    /**
+     * Get the mapped name of a property
+     * @param name The property name to convert
+     */
     mapPropertyNameToDb<K extends Extract<keyof T, string>>(name: K) {
         return this.properties.get(name).mappedKeyName
     }
 
+    /**
+     * Map an object containing a subset of the document's properties to DB represention.  No
+     * timestamps will be updated.  The resulting object will contain just the mapped versions of
+     * the provided properties.
+     * @param object A partial document
+     */
     mapPartialToDb(object: Partial<T>): any
     mapPartialToDb(objects: Partial<T>[]): any[]
     mapPartialToDb(object: Partial<T> | Partial<T>[]): any {
@@ -127,10 +156,18 @@ export class Mapper<T extends object> {
         return mappedObject
     }
 
+    /**
+     * Map objects from DB representation to instances of the associated document class.
+     * @param mappedObjects An array of documents in DB representation
+     */
     mapFromResults(mappedObjects: any[]): T[] {
         return mappedObjects.map(element => this.mapFromResult(element))
     }
 
+    /**
+     * Map an object from DB representation to an instance of the associated document class.
+     * @param mappedObject A document in DB representation
+     */
     mapFromResult(mappedObject: any): T {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
             return Mapper.throwUnexpectedTypeError(mappedObject)
@@ -154,10 +191,20 @@ export class Mapper<T extends object> {
         return document
     }
 
+    /**
+     * Map from partial documents in DB representation to objects containing the mapped set of
+     * properties in an in-memory representation.
+     * @param mappedObjects An array of partial documents in DB representation
+     */
     mapPartialsFromDb(mappedObjects: any[]): Partial<T>[] {
         return mappedObjects.map(element => this.mapPartialFromDb(element))
     }
 
+    /**
+     * Map from a partial document in DB representation to an object containing the mapped
+     * set of properties in an in-memory representation.
+     * @param mappedObjects An array of partial documents in DB representation
+     */
     mapPartialFromDb(mappedObject: any): Partial<T> {
         if (typeof mappedObject !== 'object' || Array.isArray(mappedObject)) {
             return Mapper.throwUnexpectedTypeError(mappedObject)
