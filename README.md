@@ -2,7 +2,7 @@
 
 ## Description
 
-Deco-Mongo is a lightweight and modern MongoDB ODM library intended for use in Typescript applications of all sizes. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
+Deco-Mongo is a lightweight and modern MongoDB object modeling library, intended for use in Typescript applications of all sizes. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
 
 ## Installation
 
@@ -13,7 +13,7 @@ $ npm install deco-mongo mongodb reflect-metadata
 $ npm install -D @types/mongodb
 ```
 
-Make sure that experimental decorator and metadata support are enabled in your tsconfig.json file:
+Make sure that experimental decorator and metadata support are enabled in your tsconfig.json file.
 
 ```json
 "experimentalDecorators": true,
@@ -22,18 +22,30 @@ Make sure that experimental decorator and metadata support are enabled in your t
 
 ## Usage
 
-### Example
+### Defining relationships between classes and MongoDB documents
 
-We'll jump right in with an example. Now, let's suppose that I want to store info about dogs in my Mongo database. To define a mapping between a Typescript class and the documents stored in Mongo, we'll do something like this:
+Deco-Mongo is all about data mapping. You write classes that represent your data the way you want it to be structured in the domain or business logic layer of your application, then add decorations that describe how it should map over to your database.
+
+Let's suppose that I want to store info about dogs in my database.
 
 ```typescript
-import { Collection, Property, ObjectIdProperty, IntProperty } from 'deco-mongo'
+import {
+    Collection,
+    Indexes,
+    Property,
+    ObjectIdProperty,
+    IntProperty,
+    UpdateTimestamp,
+    GeoJsonPointConverter
+} from 'deco-mongo'
 
 export interface Dog {
+    id?: string
     name: string
     breed?: string
     age?: number
     likesPizza?: boolean
+    homeLocation?: [number, number]
 }
 
 @Collection('dogs')
@@ -43,7 +55,7 @@ export class DogDocument implements Dog {
     id?: string
 
     @Property()
-    name: string = 'None'
+    name: string = ''
 
     @Property()
     breed?: string
@@ -53,7 +65,18 @@ export class DogDocument implements Dog {
 
     @Property({
         converter: {
-            fromDb: value => true /* Every dog likes pizza, but only when it comes out of a DB */
+            fromDb: value => {
+                switch (typeof value) {
+                    case 'string:
+                        return value === 'true' ? true : false
+                    case 'boolean':
+                        return value
+                    case 'undefined':
+                        return undefined
+                    default:
+                        throw new Error('Unexpected type!')
+                }
+            }
         }
     })
     likesPizza?: boolean
@@ -66,33 +89,55 @@ export class DogDocument implements Dog {
 }
 ```
 
-#### Collection definition
+In this example, we have a DogDocument class, which we've mapped to the database using a variety of decorators.
 
-The `@Collection()` decorator defines a link between DogDocument and a collection in Mongo named 'dogs'. You'll see later that when creating a Repository, the Mongo collection will be automatically initialized with any specified options.
+#### Linking to a collection
 
-#### Indexes definition
+The `@Collection()` decorator defines a link between DogDocument and a MongoDB collection named 'dogs'. You'll see later that Deco-Mongo can automatically initialize the collection with any specified options.
 
-To define indexes within your code, you can use the `@Indexes()` decorator. The index specifications map directly to those that you would use in the [MongoDB shell](https://docs.mongodb.com/manual/reference/command/createIndexes/). By default, any indexes defined here will be created only if the collection doesn't already exist. This is to help prevent any accidents on production DBs.
+#### Defining indexes
 
-#### Property definition
+If you wish to define indexes within your code, you can use the `@Indexes()` decorator. On DogDocument, we've defined a unique index on the `name` property. The index specifications are provided directly to Mongo, so define them as you would in the [MongoDB shell](https://docs.mongodb.com/manual/reference/command/createIndexes/). By default, any indexes defined here will be created only if the collection doesn't already exist. Use caution when creating indexes in your code as this may not be desirable in production systems.
 
-To save and restore individual properties of the class, they must be annotated with `@Property()` or one of its specializations -- like `@ObjectIdProperty()` or `@IntProperty()`. By default, an annotated property will be mapped to the database as-is.
+#### Defining properties
 
-A property can be renamed to something else when stored in the database be using the "name" option.
+To save and restore any individual property of a class, it must be annotated with `@Property()` or one of its specializations -- like `@ObjectIdProperty()` or `@IntProperty()`. By default, an annotated property will be mapped to the database as-is.
 
-```typescript
-@Property({ name: 'dbName' })
-name?: string
-```
+#### Renaming a property
 
-The value of a property can also be modified through the use of a property converter.
+A property can be renamed to something else when stored in the database be using the `name` option. For example, in DogDocument, we mapped the `id` property on the class to the special `_id` property used by Mongo.
 
 ```typescript
-@Property({ converter: { toDb: value => 'Mapped ' + value } })
-name?: string
+@ObjectIdProperty({ name: '_id', autoGenerate: true })
+id?: string
 ```
 
-This is a powerful feature that enables separation of the domain and data layers of your application. In the example above, we've specified a converter inline, which modifies a string when written to the database. It's also possible to provide an instance of your own property converter class.
+#### Property converters
+
+The value of a property can also be modified through the use of a property converter. In DogDocoument, we specified one inline on the `likesPizza` property:
+
+```typescript
+@Property({
+    converter: {
+        fromDb: value => {
+            switch (typeof value) {
+                case 'string:
+                    return value === 'true' ? true : false
+                case 'boolean':
+                    return value
+                case 'undefined':
+                    return undefined
+                default:
+                    throw new Error('Unexpected type!')
+            }
+        }
+    }
+})
+likesPizza?: boolean
+```
+In this example, we're handling the possibility that the database provides us with a string instead of the boolean that our class is expecting. At some point in the past, maybe we stored `likesPizza` as a string, but now we don't. With a converter, we're able to upgrade the data on read as opposed to updating the documents in the database all at once, which can help facilitate a graceful migration.
+
+It's also possible to provide an instance of your own property converter class.
 
 ```typescript
 class StringConverter extends PropertyConverter {
@@ -132,18 +177,20 @@ class StringConverter extends PropertyConverter {
 }
 ```
 
-The above class will accept a string or number value and always persist it as a string value in the database. Upon reading the value, it will automatically convert it to the type expected by the property in the class. The advantage of using a property converter class like this is that it provides a level of type safety and can be reused in multiple places. Of course, an inline converter is perfectly acceptable for simple one-off conversions.
+The above class will accept a string or number value and always persist it as a string value in the database. Upon reading the value, it will automatically convert it to the type expected by the property in the class. The advantage of using a property converter class like this is that it provides some level of type safety and can be reused in multiple places. Of course, an inline converter is perfectly acceptable for simple one-off conversions.
+
+It's worth noting that by design, Deco-Mongo refrains from automatically converting values from one type to another, instead throwing an exception. This is to help prevent silent issues from creeping into your application.
 
 #### Built-in property converters
 
-You may have noticed that we used several variations of `@Property()` and custom converters in DogDocument. These are all built-in property converters that are available in Deco-Mongo. For convenience, most of the built-in converters have decorators associated with them. That means that:
+You may have noticed that we used several variations of `@Property()` and custom converters in DogDocument. These are all built-in property converters that are available in Deco-Mongo. For convenience, most of the built-in converters have decorators associated with them. That means that...
 
 ```typescript
 @Property({ converter: new IntConverter() })
 age?: number
 ```
 
-... is equivalent to:
+... is equivalent to...
 
 ```typescript
 @IntProperty()
@@ -159,17 +206,19 @@ Here's the full list of converters:
 | `IntConverter`          | `@IntProperty`      | The value will be represented as a BSON 32-bit integer value                                                           |
 | `DoubleConverter`       | `@DoubleProperty`   | The value will be represented as a BSON double-precision floating point value                                          |
 | `NestedConverter`       | `@NestedProperty`   | Convert a sub-document or array of sub-documents using the property definitions on a class representing it             |
-| `GeoJsonPointConverter` |                     | Converts a coordinate array to a GeoJSON point, suitable for geo-spatial indexing in Mongo                             |
+| `GeoJsonPointConverter` |                     | Converts a coordinate array to a GeoJSON point, suitable for geospatial indexing in Mongo                             |
 
 #### Timestamp properties
 
-You may have also noticed that the lastModified property in DogDocument uses the `@UpdateTimestamp()` decorator. This decorator is used to indicate that the property is a timestamp that should be automatically set to the date at the time the that record is mapped for insertion or update.
+You may have also noticed that the `lastModified` property in DogDocument uses the `@UpdateTimestamp()` decorator. This decorator is used to indicate that the property is a timestamp that should be automatically set to the date at the time the that record is mapped for insertion or update.
 
 There is a similar `@CreationTimestamp()` decorator, which will be automatically set when a document is inserted, but left untouched after that.
 
+The timestamps are generated on the client-side and unlikely to be accurate enough to determine exact order when dealing with high volumes of concurrent modifications.
+
 #### Unique document IDs
 
-Every document in Mongo will have an "\_id" field associated with it. Deco-Mongo requires that at least one property be mapped to "\_id". The type is unimportant -- it's value just has to be unique. In DogDocument, we mapped a string property named "id" to a Mongo ObjectID. Alternatively, we could have used a UUID as our ID:
+Every document in Mongo will have an `\_id` field associated with it. Deco-Mongo requires that at least one property be mapped to `\_id`. The type is unimportant -- it's value just has to be unique. In DogDocument, we mapped a string property named `id` to a Mongo ObjectID. Alternatively, we could have used a UUID as our ID:
 
 ```typescript
 @UuidProperty({ name: '_id', autoGenerate: 'v4' })
@@ -178,7 +227,22 @@ id?: string
 
 While somewhat less performant than ObjectIDs, UUIDs are more standard and versatile. Both are well-supported by Deco-Mongo.
 
-#### Mapping documents
+#### Initializing a collection
+
+Deco-Mongo functions as a mapping layer on top of the MongoDB driver rather than replacing it entirely.  You must first establish a connection using the MongoDB driver:
+
+'''typescript
+const client: MongoClient = await MongoClient.connect('mongodb://localhost')
+const db: Db = client.db('AppDB')
+'''
+
+To initialize a collection using Deco-Mongo, you can do the following:
+
+```typescript
+const collection = await DecoMongo.initializeCollection(DogDocument, db)
+```
+
+### Mapping documents
 
 So now that we've covered how to define a mapping between a class and a MongoDB document, it's time to look at how we can apply it.
 
@@ -205,7 +269,7 @@ const dog = new DogDocument()
 insert(dog)
 ```
 
-In the above example, we've created a DogDocument Mapper object, which we then use to map into a document ready for insertion, insert it, and then map the result back into a DogDocument again.
+In the above example, we've created a DogDocument `Mapper` object, which we then use to map into a document ready for insertion, insert it, and then map the result back into a DogDocument again.
 
 We could also map a document into a form ready for a MongoDB update operation:
 
@@ -231,10 +295,6 @@ When mapping for an update, we're not assuming any knowledge of what the documen
 #### Creating a DAO
 
 [Not finished]
-
-```typescript
-const collection = await DecoMongo.initializeCollection(DogDocument, db)
-```
 
 ## General Guidance
 
