@@ -2,7 +2,7 @@
 
 ## Description
 
-Deco-Mongo is a lightweight and modern MongoDB object modeling library, intended for use in Typescript applications of all sizes. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
+Deco-Mongo is a lightweight and modern take on MongoDB object modeling, intended for use in Typescript applications. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
 
 ## Installation
 
@@ -24,7 +24,7 @@ Make sure that experimental decorator and metadata support are enabled in your t
 
 ### Defining relationships between classes and MongoDB documents
 
-Deco-Mongo is all about data mapping. You write classes that represent your data the way you want it to be structured in the domain or business logic layer of your application, then add decorations that describe how it should map over to your database.
+Deco-Mongo is all about data mapping. You write classes that represent your data the way you want it to be structured in the domain layer of your application, then add decorations that describe how it should map over to your database.
 
 Let's suppose that I want to store info about dogs in my database.
 
@@ -276,7 +276,7 @@ First of all, notice that we named this class "DogsRepository". Generally, a "DA
 
 ### Mapping operations
 
-At the lowest level, documents can be mapped through the use of a `Mapper` object.
+At the lowest level, documents can be mapped directly through the use of a `Mapper` object. Indeed, this component can be used by itself, giving you greater architectural flexibility.
 
 ```typescript
 const mapper = new Mapper(DogDocument)
