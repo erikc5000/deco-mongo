@@ -9,7 +9,7 @@
         "build:clean": "rimraf lib",
         "build:tsc": "tsc",
         "build:watch": "tsc --watch",
-        "format:check": "prettier --list-different \"src/**/*.ts\"",
+        "format:check": "prettier --check \"src/**/*.ts\"",
         "format:write": "prettier --write \"src/**/*.ts\"",
         "lint": "tslint -p tsconfig.json -c tslint.json",
         "lint:check-config": "tslint-config-prettier-check ./tslint.json",
@@ -35,7 +35,7 @@
         "node": ">= 8.10.0"
     },
     "devDependencies": {
-        "@types/jest": "^23.3.12",
+        "@types/jest": "^23.3.13",
         "@types/mongodb": "^3.1.19",
         "@types/mongodb-memory-server": "^1.8.0",
         "@types/node": "^10.12.18",
@@ -45,13 +45,13 @@
         "mongodb": "^3.1.12",
         "mongodb-memory-server": "^2.9.3",
         "nodemon": "^1.18.9",
-        "prettier": "^1.15.3",
+        "prettier": "^1.16.0",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^2.6.3",
         "ts-jest": "^23.10.5",
         "tslint": "^5.12.1",
         "tslint-config-prettier": "^1.17.0",
-        "typescript": "^3.2.2"
+        "typescript": "^3.2.4"
     },
     "dependencies": {
         "uuid": "^3.3.2"
