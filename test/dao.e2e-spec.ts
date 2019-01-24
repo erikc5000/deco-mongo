@@ -48,7 +48,7 @@ describe('Dao (e2e)', async () => {
         )
 
         db = client.db(dbName)
-    }, 10000)
+    }, 100000)
 
     afterAll(async () => {
         if (client) await client.close()

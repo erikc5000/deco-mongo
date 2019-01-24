@@ -43,7 +43,7 @@
         "@types/uuid": "^3.4.4",
         "jest": "^23.6.0",
         "mongodb": "^3.1.13",
-        "mongodb-memory-server": "^2.9.3",
+        "mongodb-memory-server": "^3.0.0",
         "nodemon": "^1.18.9",
         "prettier": "^1.16.1",
         "reflect-metadata": "^0.1.13",
