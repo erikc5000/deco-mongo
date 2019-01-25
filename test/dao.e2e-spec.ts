@@ -16,7 +16,7 @@ describe('Dao (e2e)', async () => {
     let client: mongo.MongoClient
     let db: mongo.Db
     let collection: mongo.Collection
-    let dao: Dao<Cat>
+    let dao: Dao<Cat, string>
 
     @Collection('cats', { autoCreateIndexes: 'ifNewCollection' })
     @Indexes({ key: { name: 1 }, unique: true })
@@ -42,10 +42,7 @@ describe('Dao (e2e)', async () => {
         const uri = await mongod.getConnectionString()
         const dbName = await mongod.getDbName()
 
-        client = await mongo.MongoClient.connect(
-            uri,
-            { useNewUrlParser: true }
-        )
+        client = await mongo.MongoClient.connect(uri, { useNewUrlParser: true })
 
         db = client.db(dbName)
     }, 100000)

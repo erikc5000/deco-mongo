@@ -1,4 +1,4 @@
-import { ClassType } from './interfaces'
+import { ClassType, KeyOf } from './interfaces'
 import { getPropertiesMetadata, PropertiesMetadata } from './internal/metadata/properties.metadata'
 import 'reflect-metadata'
 
@@ -122,7 +122,7 @@ export class Mapper<T extends object> {
      * Get the mapped name of a property
      * @param name The property name to convert
      */
-    mapPropertyNameToDb<K extends Extract<keyof T, string>>(name: K) {
+    mapPropertyNameToDb<K extends KeyOf<T>>(name: K) {
         return this.properties.get(name).mappedKeyName
     }
 
