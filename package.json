@@ -23,7 +23,9 @@
     "keywords": [
         "mongo",
         "mongodb",
-        "odm"
+        "odm",
+        "database",
+        "db"
     ],
     "author": "Erik Christensen",
     "license": "ISC",
