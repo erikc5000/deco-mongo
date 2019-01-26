@@ -1,7 +1,7 @@
 import * as mongo from 'mongodb'
 import { Mapper } from './mapper'
 import { MappedCollection } from './mapped-collection'
-import { KeyOf } from './interfaces/index'
+import { KeyOf } from './interfaces'
 
 /**
  * Base class for all queries
