@@ -1,6 +1,7 @@
 import * as mongo from 'mongodb'
 import { Mapper } from './mapper'
 import { MappedCollection } from './mapped-collection'
+import { KeyOf } from './interfaces/index'
 
 /**
  * Base class for all queries
@@ -35,5 +36,54 @@ export abstract class Query<T extends object> {
 
     protected async getResults(cursor: mongo.Cursor<any>, mapper: Mapper<T>): Promise<T[]> {
         return await cursor.map(document => mapper.mapFromResult(document)).toArray()
+    }
+}
+
+/** Sort order */
+export const enum SortOrder {
+    Ascending = 1,
+    Descending = -1
+}
+
+/** Sort helper options */
+export interface SortHelperOptions {
+    /** Ignore duplicated properties or throw an exception? */
+    duplicatePolicy?: 'ignore' | 'throw'
+}
+
+interface SortItem<T extends object> {
+    property: KeyOf<T>
+    order: SortOrder
+}
+
+/** A class that helps with implementing a `sortBy()` builder method on queries. */
+export class SortHelper<T extends object> {
+    private sortItems: SortItem<T>[] = []
+
+    constructor(private readonly options: SortHelperOptions = {}) {}
+
+    push(property: KeyOf<T>, order: SortOrder) {
+        if (!this.sortItems.some(item => item.property === property)) {
+            this.sortItems.push({ property, order })
+        }
+
+        if (this.options.duplicatePolicy === 'throw') {
+            throw new Error(`Already sorting by ${property}`)
+        }
+    }
+
+    getSortOption(mapper: Mapper<T>) {
+        if (this.sortItems.length === 1) {
+            return SortHelper.createSortObject(this.sortItems[0], mapper)
+        } else if (this.sortItems.length > 1) {
+            return this.sortItems.map(item => SortHelper.createSortObject(item, mapper))
+        }
+    }
+
+    private static createSortObject<T extends object>(item: SortItem<T>, mapper: Mapper<T>) {
+        const sortObject: any = {}
+        const mappedName = mapper.mapPropertyNameToDb(item.property)
+        sortObject[mappedName] = item.order
+        return sortObject
     }
 }
