@@ -1,5 +1,6 @@
 import * as mongo from 'mongodb'
 import { Query } from '../query'
+import { Mapper } from '../mapper'
 
 export interface PaginatedQueryOptions {
     skip?: number
@@ -37,7 +38,7 @@ export abstract class PaginatedQuery<T extends object> extends Query<T> {
     /**
      * Provide pagination options to Mongo
      */
-    protected getOptions(): mongo.FindOneOptions | undefined {
+    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions | undefined {
         return this.paginationOptions
     }
 }

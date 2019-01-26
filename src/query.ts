@@ -56,6 +56,8 @@ interface SortItem<T extends object> {
     order: SortOrder
 }
 
+type SortArrayTuple = [string, number]
+
 /** A class that helps with implementing a `sortBy()` builder method on queries. */
 export class SortHelper<T extends object> {
     private sortItems: SortItem<T>[] = []
@@ -70,9 +72,7 @@ export class SortHelper<T extends object> {
     push(property: KeyOf<T>, order: SortOrder) {
         if (!this.sortItems.some(item => item.property === property)) {
             this.sortItems.push({ property, order })
-        }
-
-        if (this.options.duplicatePolicy === 'throw') {
+        } else if (this.options.duplicatePolicy === 'throw') {
             throw new Error(`Already sorting by ${property}`)
         }
     }
@@ -82,17 +82,13 @@ export class SortHelper<T extends object> {
      * @param mapper A mapper object
      */
     getSortOption(mapper: Mapper<T>) {
-        if (this.sortItems.length === 1) {
-            return SortHelper.createSortObject(this.sortItems[0], mapper)
-        } else if (this.sortItems.length > 1) {
-            return this.sortItems.map(item => SortHelper.createSortObject(item, mapper))
-        }
+        return this.sortItems.map(item => SortHelper.createSortArrayTuple(item, mapper))
     }
 
-    private static createSortObject<T extends object>(item: SortItem<T>, mapper: Mapper<T>) {
-        const sortObject: any = {}
-        const mappedName = mapper.mapPropertyNameToDb(item.property)
-        sortObject[mappedName] = item.order
-        return sortObject
+    private static createSortArrayTuple<T extends object>(
+        item: SortItem<T>,
+        mapper: Mapper<T>
+    ): SortArrayTuple {
+        return [mapper.mapPropertyNameToDb(item.property), item.order]
     }
 }

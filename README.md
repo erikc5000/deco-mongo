@@ -329,7 +329,7 @@ There are several built-in query objects available:
 | `Query`              | Abstract base class for all queries                                               |
 | `PaginatedQuery`     | Abstract class including `skip()` and `limit()` methods to support pagination     |
 | `FindAllQuery`       | A subclass of `PaginatedQuery` that searches for all documents                    |
-| `GeospatialQuery`    | Abstract base class for geospatial queries                                         |
+| `GeospatialQuery`    | Abstract base class for geospatial queries                                        |
 | `GeoNearQuery`       | Search for documents near a geographical location (uses the "\$near" operator)    |
 | `GeoWithinQuery`     | Search for documents within a geographical area (uses the '\$geoWithin' operator) |
 | `GeoIntersectsQuery` | Search for documents intersecting a geographical area                             |
@@ -357,17 +357,13 @@ import { SortHelper, SortOrder, FindAllQuery } from 'deco-mongo'
 export class FindAllDogsQuery extends FindAllQuery<DogDocument> {
     private readonly sortHelper = new SortHelper<DogDocument>
 
-    constructor() {
-        super(DogDocument)
-    }
-
     sortBy(property: 'name' | 'id', order: SortOrder = SortOrder.Ascending) {
         this.sortHelper.push(property, order)
         return this
     }
 
     protected getOptions(mapper: Mapper<DogDocument>): mongo.FindOneOptions {
-        const options = super.getOptions(mapper)
+        const options = super.getOptions(mapper) || {}
         options.sort = this.sortHelper.getSortOption(mapper)
         return options
     }
