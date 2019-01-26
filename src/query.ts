@@ -62,6 +62,11 @@ export class SortHelper<T extends object> {
 
     constructor(private readonly options: SortHelperOptions = {}) {}
 
+    /**
+     * Add a sort specification for a particular property
+     * @param property The property to sort by
+     * @param order Sort order
+     */
     push(property: KeyOf<T>, order: SortOrder) {
         if (!this.sortItems.some(item => item.property === property)) {
             this.sortItems.push({ property, order })
@@ -72,6 +77,10 @@ export class SortHelper<T extends object> {
         }
     }
 
+    /**
+     * Get the sort option that should be provided to the MongoDB driver
+     * @param mapper A mapper object
+     */
     getSortOption(mapper: Mapper<T>) {
         if (this.sortItems.length === 1) {
             return SortHelper.createSortObject(this.sortItems[0], mapper)
