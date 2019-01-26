@@ -116,7 +116,7 @@ id?: string
 
 #### Property converters
 
-The value of a property can also be modified through the use of a property converter. On `DogDocoument`, we specified one inline on the `likesPizza` property:
+The value of a property can also be modified through the use of a property converter. On `DogDocument`, we specified one inline on the `likesPizza` property:
 
 ```typescript
 @Property({
@@ -329,7 +329,7 @@ There are several built-in query objects available:
 | `Query`              | Abstract base class for all queries                                               |
 | `PaginatedQuery`     | Abstract class including `skip()` and `limit()` methods to support pagination     |
 | `FindAllQuery`       | A subclass of `PaginatedQuery` that searches for all documents                    |
-| `GeospatialQuery`    | Abstract base class for geospatial querys                                         |
+| `GeospatialQuery`    | Abstract base class for geospatial queries                                         |
 | `GeoNearQuery`       | Search for documents near a geographical location (uses the "\$near" operator)    |
 | `GeoWithinQuery`     | Search for documents within a geographical area (uses the '\$geoWithin' operator) |
 | `GeoIntersectsQuery` | Search for documents intersecting a geographical area                             |
@@ -456,7 +456,7 @@ In addition to the `Mapper` object, there is also a `MappedCollection`, which co
 
 ## Using Deco-Mongo with NestJS
 
-If you're using [NestJS](https://nestjs.com/), I recommend grabbing the [nest-mongodb](https://www.npmjs.com/package/nest-mongodb) module that I wrote. Once you have that setup, you can create providers that initialze your collections in Deco-Mongo. Using our dog example, the resulting feature module will look something like this:
+If you're using [NestJS](https://nestjs.com/), I recommend grabbing the [nest-mongodb](https://www.npmjs.com/package/nest-mongodb) module that I wrote. Once you have that setup, you can create providers that initialize your collections in Deco-Mongo. Using our dog example, the resulting feature module will look something like this:
 
 ```typescript
 import { Module } from '@nestjs/common'
