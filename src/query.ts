@@ -9,7 +9,7 @@ export abstract class Query<T extends object> {
     /** @internal */
     async _find(collection: MappedCollection<T>): Promise<T[]> {
         const filter = this.getFilter(collection.mapper)
-        const options = this.getOptions()
+        const options = this.getOptions(collection.mapper)
         const cursor = collection.unmapped.find(filter, options)
         return await this.getResults(cursor, collection.mapper)
     }
@@ -17,7 +17,7 @@ export abstract class Query<T extends object> {
     /** @internal */
     async _findOne(collection: MappedCollection<T>): Promise<T | undefined> {
         const filter = this.getFilter(collection.mapper)
-        const options = this.getOptions() || {}
+        const options = this.getOptions(collection.mapper) || {}
 
         // Override any existing limit
         options.limit = 1
@@ -29,7 +29,7 @@ export abstract class Query<T extends object> {
 
     protected abstract getFilter(mapper: Mapper<T>): mongo.FilterQuery<any>
 
-    protected getOptions(): mongo.FindOneOptions | undefined {
+    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions | undefined {
         return undefined
     }
 
