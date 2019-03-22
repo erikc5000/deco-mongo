@@ -11,7 +11,7 @@ import {
     Dao
 } from '../src'
 
-describe('Dao (e2e)', async () => {
+describe('Dao (e2e)', () => {
     let mongod: MongoMemoryServer
     let client: mongo.MongoClient
     let db: mongo.Db
@@ -61,7 +61,7 @@ describe('Dao (e2e)', async () => {
         await db.dropCollection('cats')
     })
 
-    describe('insert', async () => {
+    describe('insert', () => {
         it(`should insert single documents`, async () => {
             const cat = new Cat()
             cat.name = 'Charles'
