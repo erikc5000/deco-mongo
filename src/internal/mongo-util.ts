@@ -19,7 +19,6 @@ export function isDuplicateKeyError(err: any) {
 }
 
 export function parseDuplicateKeyError(err: mongo.MongoError): DuplicateKeyInfo {
-    // "E11000 duplicate key error collection: tms-dev.gyms index: name_1_locationName_1 dup key: { : "Rock Spot Climbing", : "South Boston" }"
     if (err.errmsg) {
         const components = err.errmsg.match(/.* collection: (.+) index: (.+) dup key: (.+)/)
 
