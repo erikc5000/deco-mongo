@@ -1,5 +1,7 @@
 # Deco-Mongo
 
+[![Build Status](https://travis-ci.com/erikc5000/deco-mongo.svg?branch=master)](https://travis-ci.com/erikc5000/deco-mongo)
+
 ## Description
 
 Deco-Mongo is a lightweight and modern take on MongoDB object modeling, intended for use in TypeScript applications. By taking advantage of newer language features like reflection and decorators (hence the "deco"), it provides some level of type safety and an overall more pleasant developer experience than older libraries like Mongoose -- in this author's totally biased opinion, anyway. :smiley:
