@@ -9,6 +9,7 @@
         "build:clean": "rimraf lib",
         "build:tsc": "tsc",
         "build:watch": "tsc --watch",
+        "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
         "format:check": "prettier --check \"src/**/*.ts\"",
         "format:write": "prettier --write \"src/**/*.ts\"",
         "lint": "tslint -p tsconfig.json -c tslint.json",
@@ -17,8 +18,7 @@
         "test:unit": "jest",
         "test:unit-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
-        "test:e2e-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --config ./test/jest-e2e.json",
-        "test:cov": "jest --coverage"
+        "test:e2e-debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --config ./test/jest-e2e.json"
     },
     "keywords": [
         "mongo",
@@ -40,11 +40,12 @@
         "@types/jest": "^24.0.11",
         "@types/mongodb": "^3.1.22",
         "@types/mongodb-memory-server": "^1.8.0",
-        "@types/node": "^10.14.2",
+        "@types/node": "^10.14.4",
         "@types/rimraf": "^2.0.2",
         "@types/uuid": "^3.4.4",
+        "coveralls": "^3.0.3",
         "jest": "^24.5.0",
-        "mongodb": "^3.2.1",
+        "mongodb": "^3.2.2",
         "mongodb-memory-server": "^4.2.1",
         "nodemon": "^1.18.10",
         "prettier": "^1.16.4",
@@ -73,6 +74,7 @@
         "transform": {
             "^.+\\.(t|j)s$": "ts-jest"
         },
+        "collectCoverage": true,
         "coverageDirectory": "../coverage",
         "testEnvironment": "node"
     }
