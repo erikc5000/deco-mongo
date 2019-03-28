@@ -1,6 +1,7 @@
 # Deco-Mongo
 
 [![Build Status](https://travis-ci.com/erikc5000/deco-mongo.svg?branch=master)](https://travis-ci.com/erikc5000/deco-mongo)
+[![Coverage Status](https://coveralls.io/repos/github/erikc5000/deco-mongo/badge.svg?branch=master)](https://coveralls.io/github/erikc5000/deco-mongo?branch=master)
 
 ## Description
 
