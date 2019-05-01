@@ -35,14 +35,14 @@ export class Dao<TDoc extends object, TId = any> {
      * @param documents The documents to insert
      * @returns The inserted documents
      */
-    async insert(documents: TDoc[]): Promise<TDoc[]>
+    async insert(documents: readonly TDoc[]): Promise<TDoc[]>
 
-    async insert(document: TDoc | TDoc[]): Promise<TDoc | TDoc[]> {
+    async insert(document: TDoc | readonly TDoc[]): Promise<TDoc | TDoc[]> {
         if (Array.isArray(document)) {
             return await this.collection.insertMany(document)
         }
 
-        return await this.collection.insertOne(document)
+        return await this.collection.insertOne(document as TDoc)
     }
 
     /**

@@ -41,7 +41,7 @@ export class MappedCollection<T extends object> {
      * @param documents The documents to insert
      * @param options MongoDB Collection.insertMany() options()
      */
-    async insertMany(documents: T[], options: mongo.CollectionInsertManyOptions = {}) {
+    async insertMany(documents: readonly T[], options: mongo.CollectionInsertManyOptions = {}) {
         const mappedDocs = this.mapper.mapForInsert(documents)
         const result = await this.collection.insertMany(mappedDocs, options)
 

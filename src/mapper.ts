@@ -42,8 +42,8 @@ export class Mapper<T extends object> {
      * @param document A document or array of documents
      */
     mapForInsert(document: T): any
-    mapForInsert(documents: T[]): any[]
-    mapForInsert(document: T | T[]): any {
+    mapForInsert(documents: readonly T[]): any[]
+    mapForInsert(document: T | readonly T[]): any {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForInsert(element))
         } else if (!(document instanceof this.classType)) {
@@ -71,8 +71,8 @@ export class Mapper<T extends object> {
      * @param options Options
      */
     mapForUpdate(document: T, options?: MapForUpdateOptions): UpdateOperation
-    mapForUpdate(documents: T[], options?: MapForUpdateOptions): UpdateOperation[]
-    mapForUpdate(document: T | T[], options: MapForUpdateOptions = {}): any {
+    mapForUpdate(documents: readonly T[], options?: MapForUpdateOptions): UpdateOperation[]
+    mapForUpdate(document: T | readonly T[], options: MapForUpdateOptions = {}): any {
         if (Array.isArray(document)) {
             return document.map(element => this.mapForUpdate(element), options)
         } else if (!(document instanceof this.classType)) {
@@ -160,7 +160,7 @@ export class Mapper<T extends object> {
      * Map objects from DB representation to instances of the associated document class.
      * @param mappedObjects An array of documents in DB representation
      */
-    mapFromResults(mappedObjects: any[]): T[] {
+    mapFromResults(mappedObjects: readonly any[]): T[] {
         return mappedObjects.map(element => this.mapFromResult(element))
     }
 
@@ -196,7 +196,7 @@ export class Mapper<T extends object> {
      * properties in an in-memory representation.
      * @param mappedObjects An array of partial documents in DB representation
      */
-    mapPartialsFromDb(mappedObjects: any[]): Partial<T>[] {
+    mapPartialsFromDb(mappedObjects: readonly any[]): Partial<T>[] {
         return mappedObjects.map(element => this.mapPartialFromDb(element))
     }
 
