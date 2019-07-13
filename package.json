@@ -43,7 +43,7 @@
         "@types/node": "^10.14.12",
         "@types/rimraf": "^2.0.2",
         "@types/uuid": "^3.4.5",
-        "coveralls": "^3.0.4",
+        "coveralls": "^3.0.5",
         "jest": "^24.8.0",
         "mongodb": "^3.2.7",
         "mongodb-memory-server": "^5.1.5",
