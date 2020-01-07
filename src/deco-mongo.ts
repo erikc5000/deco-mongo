@@ -19,7 +19,7 @@ export class DecoMongo {
         if (collExists) {
             collection = db.collection(name)
 
-            if (options && options.jsonSchema && options.jsonSchema.when === 'always') {
+            if (options?.jsonSchema?.when === 'always') {
                 const validator = options.jsonSchema.use
                     ? { $jsonSchema: options.jsonSchema.use }
                     : {}
