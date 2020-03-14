@@ -37,27 +37,27 @@
         "node": ">= 8.10.0"
     },
     "devDependencies": {
-        "@types/jest": "^25.1.2",
-        "@types/mongodb": "^3.3.16",
+        "@types/jest": "^25.1.4",
+        "@types/mongodb": "^3.5.2",
         "@types/mongodb-memory-server": "^2.3.0",
-        "@types/node": "^12.12.27",
+        "@types/node": "^12.12.30",
         "@types/rimraf": "^2.0.3",
-        "@types/uuid": "^3.4.7",
+        "@types/uuid": "^7.0.0",
         "coveralls": "^3.0.9",
         "jest": "^25.1.0",
-        "mongodb": "^3.5.3",
-        "mongodb-memory-server": "^6.2.4",
+        "mongodb": "^3.5.5",
+        "mongodb-memory-server": "^6.3.3",
         "nodemon": "^2.0.2",
         "prettier": "^1.19.1",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
-        "ts-jest": "^25.2.0",
-        "tslint": "^6.0.0",
+        "ts-jest": "^25.2.1",
+        "tslint": "^6.1.0",
         "tslint-config-prettier": "^1.18.0",
-        "typescript": "^3.7.5"
+        "typescript": "^3.8.3"
     },
     "dependencies": {
-        "uuid": "^3.4.0"
+        "uuid": "^7.0.2"
     },
     "peerDependencies": {
         "mongodb": "^3.1.0",
