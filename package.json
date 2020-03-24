@@ -38,7 +38,7 @@
     },
     "devDependencies": {
         "@types/jest": "^25.1.4",
-        "@types/mongodb": "^3.5.2",
+        "@types/mongodb": "^3.5.3",
         "@types/mongodb-memory-server": "^2.3.0",
         "@types/node": "^12.12.30",
         "@types/rimraf": "^3.0.0",
