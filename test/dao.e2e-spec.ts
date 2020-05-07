@@ -42,7 +42,7 @@ describe('Dao (e2e)', () => {
         const uri = await mongod.getConnectionString()
         const dbName = await mongod.getDbName()
 
-        client = await mongo.MongoClient.connect(uri, { useNewUrlParser: true })
+        client = await mongo.MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
         db = client.db(dbName)
     }, 100000)
