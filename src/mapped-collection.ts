@@ -60,7 +60,7 @@ export class MappedCollection<T extends object> {
      * @param newContent The new document content
      * @param options Mongo options
      */
-    async findOneAndUpdate(filter: any, newContent: T, options: mongo.FindOneAndUpdateOption = {}) {
+    async findOneAndUpdate(filter: any, newContent: T, options: mongo.FindOneAndUpdateOption<any> = {}) {
         const update = this.mapper.mapForUpdate(newContent, { upsert: options.upsert })
         const result = await this.collection.findOneAndUpdate(filter, update, options)
 
@@ -116,7 +116,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongoDB filter object
      * @param options Mongo options
      */
-    async findOne(filter: any, options?: mongo.FindOneOptions) {
+    async findOne(filter: any, options?: mongo.FindOneOptions<any>) {
         const result = await this.collection.findOne(filter, options)
 
         if (result) {
@@ -130,7 +130,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongoDB filter object
      * @param options Mongo options
      */
-    async findOnePartial(filter: any, options?: mongo.FindOneOptions) {
+    async findOnePartial(filter: any, options?: mongo.FindOneOptions<any>) {
         const result = await this.collection.findOne(filter, options)
 
         if (result) {

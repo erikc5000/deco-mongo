@@ -30,7 +30,7 @@ export abstract class Query<T extends object> {
 
     protected abstract getFilter(mapper: Mapper<T>): mongo.FilterQuery<any>
 
-    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions | undefined {
+    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions<any> | undefined {
         return undefined
     }
 
