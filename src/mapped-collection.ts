@@ -60,7 +60,11 @@ export class MappedCollection<T extends object> {
      * @param newContent The new document content
      * @param options Mongo options
      */
-    async findOneAndUpdate(filter: any, newContent: T, options: mongo.FindOneAndUpdateOption<any> = {}) {
+    async findOneAndUpdate(
+        filter: any,
+        newContent: T,
+        options: mongo.FindOneAndUpdateOption<any> = {}
+    ) {
         const update = this.mapper.mapForUpdate(newContent, { upsert: options.upsert })
         const result = await this.collection.findOneAndUpdate(filter, update, options)
 
