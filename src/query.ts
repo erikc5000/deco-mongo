@@ -11,7 +11,10 @@ export abstract class Query<T extends object> {
     async _find(collection: MappedCollection<T>): Promise<T[]> {
         const filter = this.getFilter(collection.mapper)
         const options = this.getOptions(collection.mapper)
-        const cursor = collection.unmapped.find(filter, options)
+        const cursor =
+            options != null
+                ? collection.unmapped.find(filter, options)
+                : collection.unmapped.find(filter)
         return await this.getResults(cursor, collection.mapper)
     }
 
