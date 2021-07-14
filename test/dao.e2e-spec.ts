@@ -38,13 +38,10 @@ describe('Dao (e2e)', () => {
     }
 
     beforeAll(async () => {
-        mongod = new MongoMemoryServer()
-        const uri = await mongod.getConnectionString()
-        const dbName = await mongod.getDbName()
-
+        mongod = await MongoMemoryServer.create()
+        const uri = mongod.getUri()
         client = await mongo.MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-
-        db = client.db(dbName)
+        db = client.db(mongod.instanceInfo!!.dbName)
     }, 100000)
 
     afterAll(async () => {
