@@ -38,7 +38,7 @@ export abstract class PaginatedQuery<T extends object> extends Query<T> {
     /**
      * Provide pagination options to Mongo
      */
-    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions<any> | undefined {
+    protected getOptions(mapper: Mapper<T>): mongo.FindOptions<any> | undefined {
         return this.paginationOptions
     }
 }

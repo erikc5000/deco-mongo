@@ -1,4 +1,4 @@
-import { Binary } from 'bson'
+import { Binary } from 'mongodb'
 import { PropertyConverter } from '../property-converter'
 import * as uuid from 'uuid'
 

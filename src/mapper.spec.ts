@@ -7,7 +7,7 @@ import {
     DoubleProperty
 } from './decorators'
 import { ObjectIdProperty } from './decorators/object-id-property.decorator'
-import { ObjectID } from 'bson'
+import { ObjectId } from 'mongodb'
 
 describe('mapper', () => {
     describe('constructor', () => {
@@ -58,7 +58,7 @@ describe('mapper', () => {
         describe('with a class that has no timestamps', () => {
             class CatDocument {
                 @ObjectIdProperty({ name: '_id', autoGenerate: true })
-                id?: ObjectID
+                id?: ObjectId
 
                 @Property({ name: 'catName' })
                 name: string = 'I have a name'
@@ -79,7 +79,7 @@ describe('mapper', () => {
 
                 expect(typeof mappedDoc).toBe('object')
                 expect(Array.isArray(mappedDoc)).toBeFalsy()
-                expect(mappedDoc._id).toBeInstanceOf(ObjectID)
+                expect(mappedDoc._id).toBeInstanceOf(ObjectId)
                 expect(mappedDoc.catName).toBe('I have a name')
                 expect(Object.keys(mappedDoc).sort()).toEqual(['_id', 'catName'])
             })
@@ -101,16 +101,16 @@ describe('mapper', () => {
                 expect(Array.isArray(mappedDocs)).toBeTruthy()
                 expect(mappedDocs).toHaveLength(3)
 
-                expect(mappedDocs[0]._id).toBeInstanceOf(ObjectID)
+                expect(mappedDocs[0]._id).toBeInstanceOf(ObjectId)
                 expect(mappedDocs[0].catName).toBe('I have a name')
                 expect(Object.keys(mappedDocs[0]).sort()).toEqual(['_id', 'catName'])
 
-                expect(mappedDocs[1]._id).toBeInstanceOf(ObjectID)
+                expect(mappedDocs[1]._id).toBeInstanceOf(ObjectId)
                 expect(mappedDocs[1].catName).toBe('different name')
                 expect(mappedDocs[1].age).toBe(7)
                 expect(Object.keys(mappedDocs[1]).sort()).toEqual(['_id', 'age', 'catName'])
 
-                expect(mappedDocs[2]._id).toBeInstanceOf(ObjectID)
+                expect(mappedDocs[2]._id).toBeInstanceOf(ObjectId)
                 expect(mappedDocs[2].catName).toBe('I have a name')
                 expect(mappedDocs[2].age).toBeNull()
                 expect(Object.keys(mappedDocs[2]).sort()).toEqual(['_id', 'age', 'catName'])
@@ -144,7 +144,7 @@ describe('mapper', () => {
 
                 expect(typeof mappedDoc).toBe('object')
                 expect(Array.isArray(mappedDoc)).toBeFalsy()
-                expect(mappedDoc._id).toBeInstanceOf(ObjectID)
+                expect(mappedDoc._id).toBeInstanceOf(ObjectId)
                 expect(mappedDoc.catName).toBe('I have a name')
                 expect(mappedDoc.createdAt).toBeInstanceOf(Date)
                 expect(mappedDoc.updatedAt).toBeInstanceOf(Date)
@@ -171,7 +171,7 @@ describe('mapper', () => {
                 expect(Array.isArray(mappedDocs)).toBeTruthy()
                 expect(mappedDocs).toHaveLength(2)
 
-                expect(mappedDocs[0]._id).toBeInstanceOf(ObjectID)
+                expect(mappedDocs[0]._id).toBeInstanceOf(ObjectId)
                 expect(mappedDocs[0].catName).toBe('I have a name')
                 expect(mappedDocs[0].createdAt).toBeInstanceOf(Date)
                 expect(mappedDocs[0].updatedAt).toBeInstanceOf(Date)
@@ -183,7 +183,7 @@ describe('mapper', () => {
                     'updatedAt'
                 ])
 
-                expect(mappedDocs[1]._id).toBeInstanceOf(ObjectID)
+                expect(mappedDocs[1]._id).toBeInstanceOf(ObjectId)
                 expect(mappedDocs[1].catName).toBe('different name')
                 expect(mappedDocs[1].createdAt).toBeInstanceOf(Date)
                 expect(mappedDocs[1].updatedAt).toBeInstanceOf(Date)
@@ -199,7 +199,7 @@ describe('mapper', () => {
     })
 
     describe('map for update', () => {
-        const objectId = new ObjectID()
+        const objectId = new ObjectId()
 
         describe('with a class that has no timestamps', () => {
             class CatDocument {
@@ -326,7 +326,7 @@ describe('mapper', () => {
     })
 
     describe('map ID to DB', () => {
-        const objectId = new ObjectID()
+        const objectId = new ObjectId()
         const stringId = objectId.toHexString()
 
         it('returns an object containing just the mapped ID field', () => {
@@ -339,7 +339,7 @@ describe('mapper', () => {
             }
 
             const mapper = new Mapper(CatDocument)
-            expect(mapper.mapIdToDb(stringId)).toStrictEqual({ _id: new ObjectID(stringId) })
+            expect(mapper.mapIdToDb(stringId)).toStrictEqual({ _id: new ObjectId(stringId) })
         })
 
         it('throws an exception if no _id property exists', () => {
@@ -354,7 +354,7 @@ describe('mapper', () => {
     })
 
     describe('map from result', () => {
-        const objectId = new ObjectID()
+        const objectId = new ObjectId()
         const modifiedDate = new Date()
 
         class CatDocument {

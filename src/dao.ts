@@ -57,7 +57,7 @@ export class Dao<TDoc extends object, TId = any> {
 
         return await this.collection.findOneAndUpdate(filter, newContent, {
             upsert: options.upsert,
-            returnOriginal: false
+            returnDocument: 'after'
         })
     }
 

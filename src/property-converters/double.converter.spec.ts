@@ -1,5 +1,5 @@
 import { DoubleConverter } from './double.converter'
-import { Double } from 'bson'
+import { Double } from 'mongodb'
 
 describe('Double converter', () => {
     const converter = new DoubleConverter()

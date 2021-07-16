@@ -1,6 +1,6 @@
 import { getPropertiesMetadata, PropertiesMetadata } from '../internal/metadata/properties.metadata'
 import { Property } from './property.decorator'
-import { ObjectID } from 'bson'
+import { ObjectId } from 'mongodb'
 import { PropertyMetadata } from '../internal/metadata/property.metadata'
 import { PropertyConverter } from '../property-converter'
 
@@ -8,7 +8,7 @@ describe('property decorator', () => {
     describe('class with decorated properties', () => {
         class BirdDocument {
             @Property()
-            _id = new ObjectID()
+            _id = new ObjectId()
 
             @Property()
             breed?: string
@@ -50,7 +50,7 @@ describe('property decorator', () => {
         it('should support property renaming', () => {
             class DogDocument {
                 @Property({ name: '_id' })
-                id = new ObjectID()
+                id = new ObjectId()
             }
 
             const properties = getPropertiesMetadata(DogDocument)
@@ -68,21 +68,21 @@ describe('property decorator', () => {
 
         it('should support inline property conversion', () => {
             class DogDocument {
-                @Property({ converter: { toDb: value => new ObjectID() } })
-                _id?: ObjectID
+                @Property({ converter: { toDb: value => new ObjectId() } })
+                _id?: ObjectId
             }
 
             const properties = getPropertiesMetadata(DogDocument)
             const property = properties!.get('_id')
             const mappedValue = property.toDb(undefined)
-            expect(mappedValue).toBeInstanceOf(ObjectID)
-            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectID)
+            expect(mappedValue).toBeInstanceOf(ObjectId)
+            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectId)
         })
 
         it('should support class-based property conversion', () => {
             class TestPropertyConverter extends PropertyConverter {
                 toDb(value: any) {
-                    return new ObjectID()
+                    return new ObjectId()
                 }
 
                 fromDb(value: any, targetType?: any) {
@@ -91,14 +91,14 @@ describe('property decorator', () => {
             }
             class DogDocument {
                 @Property({ converter: new TestPropertyConverter() })
-                _id?: ObjectID
+                _id?: ObjectId
             }
 
             const properties = getPropertiesMetadata(DogDocument)
             const property = properties!.get('_id')
             const mappedValue = property.toDb(undefined)
-            expect(mappedValue).toBeInstanceOf(ObjectID)
-            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectID)
+            expect(mappedValue).toBeInstanceOf(ObjectId)
+            expect(property.fromDb(mappedValue)).toBeInstanceOf(ObjectId)
         })
 
         it(`throws an exception when accessing a property that doesn't exist`, () => {
@@ -111,7 +111,7 @@ describe('property decorator', () => {
             expect(() => {
                 class BirdDocument {
                     @Property()
-                    _id = new ObjectID()
+                    _id = new ObjectId()
 
                     @Property()
                     @Property()
@@ -126,7 +126,7 @@ describe('property decorator', () => {
             expect(() => {
                 class BirdDocument {
                     @Property()
-                    _id = new ObjectID()
+                    _id = new ObjectId()
 
                     @Property()
                     newBreed?: string

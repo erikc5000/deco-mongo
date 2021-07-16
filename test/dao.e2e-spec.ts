@@ -6,7 +6,7 @@ import {
     ObjectIdProperty,
     Property,
     UpdateTimestamp,
-    Indexes,
+    Index,
     CreationTimestamp,
     Dao
 } from '../src'
@@ -19,7 +19,7 @@ describe('Dao (e2e)', () => {
     let dao: Dao<Cat, string>
 
     @Collection('cats', { autoCreateIndexes: 'ifNewCollection' })
-    @Indexes({ key: { name: 1 }, unique: true })
+    @Index({ name: 1 }, { unique: true })
     class Cat {
         @ObjectIdProperty({ name: '_id', autoGenerate: true })
         id?: string
@@ -40,7 +40,7 @@ describe('Dao (e2e)', () => {
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create()
         const uri = mongod.getUri()
-        client = await mongo.MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+        client = await mongo.MongoClient.connect(uri)
         db = client.db(mongod.instanceInfo!!.dbName)
     }, 100000)
 
@@ -65,7 +65,7 @@ describe('Dao (e2e)', () => {
 
             const result = await dao.insert(cat)
             expect(result).toBeInstanceOf(Cat)
-            expect(mongo.ObjectID.isValid(result.id!)).toBeTruthy()
+            expect(mongo.ObjectId.isValid(result.id!)).toBeTruthy()
             expect(result.name).toBe('Charles')
             expect(result.eyeColor).toBe('')
             expect(result.createdAt).toBeDefined()
@@ -88,7 +88,7 @@ describe('Dao (e2e)', () => {
             expect(results).toHaveLength(2)
 
             for (const result of results) {
-                expect(mongo.ObjectID.isValid(result.id!)).toBeTruthy()
+                expect(mongo.ObjectId.isValid(result.id!)).toBeTruthy()
                 expect(result.eyeColor).toBe('')
                 expect(result.createdAt).toBeDefined()
                 expect(result.updatedAt).toBeDefined()
@@ -103,7 +103,7 @@ describe('Dao (e2e)', () => {
         })
 
         it(`throws an exception when inserting documents with duplicate IDs`, async () => {
-            const id = new mongo.ObjectID().toHexString()
+            const id = new mongo.ObjectId().toHexString()
 
             const cat1 = new Cat()
             cat1.id = id

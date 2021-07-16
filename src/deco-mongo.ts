@@ -2,7 +2,8 @@ import * as mongo from 'mongodb'
 import { ClassType, CollectionOptions } from './interfaces'
 import { getCollectionMetadata } from './internal/metadata/collection.metadata'
 import { collectionExists, isIndexOptionsConflictError } from './internal/mongo-util'
-import { getIndexesMetadata } from './internal/metadata/indexes.metadata'
+import { getIndexMetadata } from './internal/metadata/index.metadata'
+import { Console } from 'console'
 
 export class DecoMongo {
     static async initializeCollection<T extends object>(classType: ClassType<T>, db: mongo.Db) {
@@ -42,7 +43,7 @@ export class DecoMongo {
     }
 
     private static getCollectionCreateOptions(options: CollectionOptions = {}) {
-        const createOptions: mongo.CollectionCreateOptions = options.mongoCreateOptions || {}
+        const createOptions: mongo.CreateCollectionOptions = options.mongoCreateOptions || {}
 
         if (options.jsonSchema && options.jsonSchema.when !== 'never' && options.jsonSchema.use) {
             createOptions.validator = { $jsonSchema: options.jsonSchema.use }
@@ -55,16 +56,24 @@ export class DecoMongo {
         classType: ClassType<TDocument>,
         collection: mongo.Collection
     ) {
-        const indexSpecs = getIndexesMetadata(classType)
+        const indexesMetadata = getIndexMetadata(classType)
 
-        if (indexSpecs.length > 0) {
+        for (const indexEntry of indexesMetadata) {
+            const { type, index, options } = indexEntry
+
             try {
-                await collection.createIndexes(indexSpecs)
+                if (type === 'single') {
+                    await collection.createIndex(index as mongo.IndexSpecification, options)
+                } else {
+                    await collection.createIndexes(index as mongo.IndexDescription[], options)
+                }
             } catch (err) {
                 if (isIndexOptionsConflictError(err)) {
                     // TODO: Revisit logging
                     // Logger.warn(err.errmsg);
                 }
+                // tslint:disable-next-line: no-console
+                console.warn(err)
             }
         }
     }

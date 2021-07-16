@@ -1,13 +1,13 @@
-import { ObjectID } from 'bson'
+import { ObjectId } from 'mongodb'
 import { PropertyConverter } from '../property-converter'
 
 export interface ObjectIdConverterOptions {
-    /** Generate a new ObjectID when converting an empty value to the database. */
-    autoGenerate?: (() => ObjectID) | boolean
+    /** Generate a new ObjectId when converting an empty value to the database. */
+    autoGenerate?: (() => ObjectId) | boolean
 }
 
 /**
- * Convert a valid MongoDB object ID into an ObjectID object
+ * Convert a valid MongoDB object ID into an ObjectId object
  */
 export class ObjectIdConverter extends PropertyConverter {
     constructor(private readonly options: ObjectIdConverterOptions = {}) {
@@ -24,28 +24,28 @@ export class ObjectIdConverter extends PropertyConverter {
                     return this.autoGenerate()
                 }
 
-                return ObjectID.createFromHexString(value)
+                return ObjectId.createFromHexString(value)
 
             case 'object':
-                if (value instanceof ObjectID) {
+                if (value instanceof ObjectId) {
                     return value
                 }
 
                 break
         }
 
-        throw new Error('Expected a string or ObjectID')
+        throw new Error('Expected a string or ObjectId')
     }
 
     fromDb(value: any, targetType?: any) {
         if (value === undefined) {
             return undefined
-        } else if (!(value instanceof ObjectID)) {
-            throw new Error('Expected an ObjectID object')
+        } else if (!(value instanceof ObjectId)) {
+            throw new Error('Expected an ObjectId object')
         }
 
         switch (targetType) {
-            case ObjectID:
+            case ObjectId:
                 return value
             case String:
                 return value.toHexString()
@@ -55,7 +55,7 @@ export class ObjectIdConverter extends PropertyConverter {
     }
 
     getSupportedTypes() {
-        return [String, ObjectID]
+        return [String, ObjectId]
     }
 
     private get shouldAutoGenerate() {
@@ -66,7 +66,7 @@ export class ObjectIdConverter extends PropertyConverter {
         if (typeof this.options.autoGenerate === 'function') {
             return this.options.autoGenerate()
         } else {
-            return new ObjectID()
+            return new ObjectId()
         }
     }
 }

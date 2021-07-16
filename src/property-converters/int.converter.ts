@@ -1,4 +1,4 @@
-import { Int32 } from 'bson'
+import { Int32 } from 'mongodb'
 import { PropertyConverter } from '../property-converter'
 
 /**

@@ -209,7 +209,7 @@ Here's the full list of built-in converters:
 
 | Converter               | Decorator           | Supported Class Types                                                  | DB BSON Type | Description                                                                                                |
 | ----------------------- | ------------------- | ---------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- |
-| `ObjectIdConverter`     | `@ObjectIdProperty` | `string`, `ObjectID`                                                   | objectid     | Converts Mongo ObjectIDs and optionally auto-generates them                                                |
+| `ObjectIdConverter`     | `@ObjectIdProperty` | `string`, `ObjectId`                                                   | objectid     | Converts Mongo ObjectIDs and optionally auto-generates them                                                |
 | `UuidConverter`         | `@UuidProperty`     | `string`, `Buffer`, `Binary`                                           | binData      | Converts UUIDs of any format to BSON binary representation and optionally auto-generates them              |
 | `IntConverter`          | `@IntProperty`      | `number`, `string`, `Int32`                                            | int          | Converts to a BSON 32-bit integer value                                                                    |
 | `DoubleConverter`       | `@DoubleProperty`   | `number`, `string`, `Double`                                           | double       | Converts to a BSON double-precision floating point value                                                   |
@@ -226,14 +226,14 @@ The timestamps are generated on the client-side and unlikely to be accurate enou
 
 #### Unique document IDs
 
-Every document in Mongo will have an '\_id' field associated with it. Deco-Mongo requires that at least one property be mapped to '\_id'. The type is unimportant -- it's value just has to be unique. In `DogDocument`, we mapped a string property named `id` to a Mongo ObjectID. Alternatively, we could have used a UUID as our ID:
+Every document in Mongo will have an '\_id' field associated with it. Deco-Mongo requires that at least one property be mapped to '\_id'. The type is unimportant -- it's value just has to be unique. In `DogDocument`, we mapped a string property named `id` to a Mongo ObjectId. Alternatively, we could have used a UUID as our ID:
 
 ```typescript
 @UuidProperty({ name: '_id', autoGenerate: 'v4' })
 id?: string
 ```
 
-While somewhat less performant than ObjectIDs, UUIDs are more standard and versatile. Both are well-supported by Deco-Mongo.
+While somewhat less performant than ObjectIds, UUIDs are more standard and versatile. Both are well-supported by Deco-Mongo.
 
 ### Initializing a collection
 
@@ -413,14 +413,14 @@ const mapper = new Mapper(DogDocument)
 async function insert(dog: DogDocument) {
     const mappedDoc = mapper.mapForInsert(dog)
     // dog = { name: 'None' } as DogDocument
-    // mappedDoc = { _id: ObjectID(<generated>), name: 'None', lastModified: Date(<now>) } as object
+    // mappedDoc = { _id: ObjectId(<generated>), name: 'None', lastModified: Date(<now>) } as object
 
     // Insert using the MongoDB driver directly
     const result = await db.collection('dogs').insertOne(mappedDoc)
 
     if (result.insertedCount === 1) {
         const mappedResult = mapper.mapFromResult(result.ops[0])
-        // mappedResult = { _id: ObjectID(<generated>), name: 'None', likesPizza: true, lastModified: Date(<now>) } as DogDocument
+        // mappedResult = { _id: ObjectId(<generated>), name: 'None', likesPizza: true, lastModified: Date(<now>) } as DogDocument
     }
 }
 
@@ -437,7 +437,7 @@ async function update(id: string, dog: DogDocument) {
     // dog = { id: <provided>, name: 'Jimmy', likesPizza: true } as DogDocument
 
     const filter = mapper.mapPartialToDb({ id })
-    // filter = { _id: ObjectID(<provided>) } as object
+    // filter = { _id: ObjectId(<provided>) } as object
 
     const updateDoc = mapper.mapForUpdate(dog)
     // updateDoc = {

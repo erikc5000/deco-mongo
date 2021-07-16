@@ -1,14 +1,14 @@
 import { getPropertiesMetadata } from '../internal/metadata/properties.metadata'
 import { ObjectIdProperty } from './object-id-property.decorator'
-import { ObjectID } from 'bson'
+import { ObjectId } from 'mongodb'
 
-describe('ObjectID property decorator', () => {
+describe('ObjectId property decorator', () => {
     class DogDocument {
         @ObjectIdProperty({ name: '_id', autoGenerate: true })
         id1?: string
 
-        @ObjectIdProperty({ autoGenerate: () => new ObjectID() })
-        id2?: ObjectID
+        @ObjectIdProperty({ autoGenerate: () => new ObjectId() })
+        id2?: ObjectId
 
         @ObjectIdProperty({ autoGenerate: false })
         id3: string = ''

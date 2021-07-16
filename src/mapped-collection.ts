@@ -2,8 +2,6 @@ import * as mongo from 'mongodb'
 import { Mapper } from './mapper'
 import { InsertionError, UpdateError } from './errors'
 
-export type MongoDeleteOneOptions = mongo.CommonOptions & { bypassDocumentValidation?: boolean }
-
 /**
  * Wraps the MongoDB Collection operations, providing a slightly higher level interface that
  * maps documents coming in and out.
@@ -19,37 +17,35 @@ export class MappedCollection<T extends object> {
     }
 
     /**
-     * Map and insert a single document into the DB, returning the inserted document, which is
-     * mapped back from DB represention.
+     * Map and insert a single document into the DB.
      * @param document The document to insert
      * @param options MongoDB Collection.insertOne() options
      */
-    async insertOne(document: T, options: mongo.CollectionInsertOneOptions = {}) {
+    async insertOne(document: T, options: mongo.InsertOneOptions = {}) {
         const mappedDoc = this.mapper.mapForInsert(document)
         const result = await this.collection.insertOne(mappedDoc, options)
 
-        if (result.insertedCount !== 1 || result.ops.length < 1) {
+        if (!result.insertedId) {
             throw new InsertionError(result)
         }
 
-        return this.mapper.mapFromResult(result.ops[0])
+        return this.mapper.mapFromResult(mappedDoc)
     }
 
     /**
-     * Map and insert multiple documents into the DB, returning the inserted documents, which are
-     * mapped back from DB represention.
+     * Map and insert multiple documents into the DB.
      * @param documents The documents to insert
      * @param options MongoDB Collection.insertMany() options()
      */
-    async insertMany(documents: readonly T[], options: mongo.CollectionInsertManyOptions = {}) {
+    async insertMany(documents: readonly T[], options: mongo.BulkWriteOptions = {}) {
         const mappedDocs = this.mapper.mapForInsert(documents)
         const result = await this.collection.insertMany(mappedDocs, options)
 
-        if (result.insertedCount !== documents.length || result.ops.length < documents.length) {
+        if (result.insertedCount !== documents.length) {
             throw new InsertionError(result)
         }
 
-        return this.mapper.mapFromResults(result.ops)
+        return this.mapper.mapFromResults(mappedDocs)
     }
 
     /**
@@ -63,7 +59,7 @@ export class MappedCollection<T extends object> {
     async findOneAndUpdate(
         filter: any,
         newContent: T,
-        options: mongo.FindOneAndUpdateOption<any> = {}
+        options: mongo.FindOneAndUpdateOptions = {}
     ) {
         const update = this.mapper.mapForUpdate(newContent, { upsert: options.upsert })
         const result = await this.collection.findOneAndUpdate(filter, update, options)
@@ -80,7 +76,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongODB filter object
      * @returns `true` on success or `false` on failure
      */
-    async deleteOne(filter: any, options?: MongoDeleteOneOptions) {
+    async deleteOne(filter: any, options: mongo.DeleteOptions = {}) {
         const result = await this.collection.deleteOne(filter, options)
         return result.deletedCount === 1 ? true : false
     }
@@ -90,7 +86,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongODB filter object
      * @returns The number of documents removed
      */
-    async deleteMany(filter: any, options?: MongoDeleteOneOptions) {
+    async deleteMany(filter: any, options: mongo.DeleteOptions = {}) {
         const result = await this.collection.deleteMany(filter, options)
         return result.deletedCount || 0
     }
@@ -112,7 +108,7 @@ export class MappedCollection<T extends object> {
      */
     findPartial(filter?: any) {
         const cursor = this.collection.find(filter)
-        return cursor.map(result => this.mapper.mapPartialsFromDb(result))
+        return cursor.map(result => this.mapper.mapPartialFromDb(result))
     }
 
     /**
@@ -120,7 +116,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongoDB filter object
      * @param options Mongo options
      */
-    async findOne(filter: any, options?: mongo.FindOneOptions<any>) {
+    async findOne(filter: any, options?: mongo.FindOptions<any>) {
         const result = await this.collection.findOne(filter, options)
 
         if (result) {
@@ -134,7 +130,7 @@ export class MappedCollection<T extends object> {
      * @param filter A MongoDB filter object
      * @param options Mongo options
      */
-    async findOnePartial(filter: any, options?: mongo.FindOneOptions<any>) {
+    async findOnePartial(filter: any, options?: mongo.FindOptions<any>) {
         const result = await this.collection.findOne(filter, options)
 
         if (result) {

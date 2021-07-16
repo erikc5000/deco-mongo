@@ -1,5 +1,5 @@
 import { IntConverter } from './int.converter'
-import { Int32 } from 'bson'
+import { Int32 } from 'mongodb'
 
 describe('Int32 converter', () => {
     const converter = new IntConverter()

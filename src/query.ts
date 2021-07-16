@@ -31,13 +31,13 @@ export abstract class Query<T extends object> {
         return results.length > 0 ? results[0] : undefined
     }
 
-    protected abstract getFilter(mapper: Mapper<T>): mongo.FilterQuery<any>
+    protected abstract getFilter(mapper: Mapper<T>): mongo.Filter<any>
 
-    protected getOptions(mapper: Mapper<T>): mongo.FindOneOptions<any> | undefined {
+    protected getOptions(mapper: Mapper<T>): mongo.FindOptions<any> | undefined {
         return undefined
     }
 
-    protected async getResults(cursor: mongo.Cursor<any>, mapper: Mapper<T>): Promise<T[]> {
+    protected async getResults(cursor: mongo.FindCursor<any>, mapper: Mapper<T>): Promise<T[]> {
         return await cursor.map(document => mapper.mapFromResult(document)).toArray()
     }
 }

@@ -25,5 +25,5 @@ export interface JsonSchemaOptions {
 export interface CollectionOptions {
     jsonSchema?: JsonSchemaOptions
     autoCreateIndexes?: AutoApplyAction
-    mongoCreateOptions?: mongo.CollectionCreateOptions
+    mongoCreateOptions?: mongo.CreateCollectionOptions
 }

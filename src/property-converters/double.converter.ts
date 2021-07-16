@@ -1,4 +1,4 @@
-import { Double } from 'bson'
+import { Double } from 'mongodb'
 import { PropertyConverter } from '../property-converter'
 
 /**

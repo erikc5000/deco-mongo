@@ -1,5 +1,5 @@
 import { UuidConverter } from './uuid.converter'
-import { Binary } from 'bson'
+import { Binary } from 'mongodb'
 import uuid = require('uuid')
 
 describe('UUID converter', () => {

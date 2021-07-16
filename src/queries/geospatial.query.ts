@@ -17,9 +17,9 @@ export abstract class GeospatialQuery<T extends object> extends PaginatedQuery<T
         super()
     }
 
-    protected getFilter(mapper: Mapper<T>): mongo.FilterQuery<any> {
+    protected getFilter(mapper: Mapper<T>): mongo.Filter<any> {
         const mappedProperty = mapper.mapPropertyNameToDb(this.propertyName)
-        const filter: mongo.FilterQuery<any> = {}
+        const filter: mongo.Filter<any> = {}
         filter[mappedProperty] = {}
         filter[mappedProperty][this.operator] = this.populateOperation()
         return filter
