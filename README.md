@@ -54,7 +54,7 @@ export interface Dog {
 }
 
 @Collection('dogs')
-@Indexes({ key: { name: 1 }, unique: true }, { key: { homeLocation: '2dsphere' } })
+@Indexes([{ key: { name: 1 }, unique: true }, { key: { homeLocation: '2dsphere' } }])
 export class DogDocument implements Dog {
     @ObjectIdProperty({ name: '_id', autoGenerate: true })
     id?: string
@@ -102,7 +102,7 @@ The `@Collection()` decorator defines a link between `DogDocument` and a MongoDB
 
 #### Defining indexes
 
-If you wish to define indexes within your code, you can use the `@Indexes()` decorator. On `DogDocument`, we've defined a unique index on the `name` property. The index specifications are provided directly to Mongo, so define them as you would in the [MongoDB shell](https://docs.mongodb.com/manual/reference/command/createIndexes/). By default, any indexes defined here will be created only if the collection doesn't already exist. Use caution when creating indexes in your code as this may not be desirable in production systems.
+If you wish to define indexes within your code, you can use the `@Index()` and `@Indexes()` decorators. On `DogDocument`, we've defined a unique index on the `name` property. The index specifications are provided directly to Mongo, so define them as you would in the [MongoDB shell](https://docs.mongodb.com/manual/reference/command/createIndexes/). By default, any indexes defined here will be created only if the collection doesn't already exist. Use caution when creating indexes in your code as this may not be desirable in production systems.
 
 #### Defining properties
 
