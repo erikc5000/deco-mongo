@@ -8,10 +8,18 @@ export class IntConverter extends PropertyConverter {
     toDb(value: any) {
         if (value === undefined) {
             return undefined
+        } else if (Number.isNaN(value)) {
+            throw new Error('NaN cannot be represented as an Int32 value')
         } else if (typeof value === 'number') {
             return new Int32(value)
         } else if (typeof value === 'string') {
-            return new Int32(parseInt(value, 10))
+            const numberValue = parseInt(value, 10)
+
+            if (Number.isNaN(numberValue)) {
+                throw new Error('NaN cannot be represented as an Int32 value')
+            }
+
+            return new Int32(numberValue)
         } else if (value instanceof Int32) {
             return value
         } else {

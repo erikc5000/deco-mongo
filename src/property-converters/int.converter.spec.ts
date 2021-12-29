@@ -21,10 +21,8 @@ describe('Int32 converter', () => {
             expect(toDbValue!.valueOf()).toEqual(0.0)
         })
 
-        it('should convert NaN number values', () => {
-            const toDbValue = converter.toDb(NaN)
-            expect(toDbValue).toBeInstanceOf(Int32)
-            expect(toDbValue!.valueOf()).toEqual(NaN)
+        it('throws an exception when given NaN', () => {
+            expect(() => converter.toDb(NaN)).toThrow(Error)
         })
 
         it('should convert non-zero number values', () => {
@@ -39,10 +37,8 @@ describe('Int32 converter', () => {
             expect(toDbValue!.valueOf()).toEqual(50)
         })
 
-        it('should convert non-number string values', () => {
-            const toDbValue = converter.toDb('this is not a number')
-            expect(toDbValue).toBeInstanceOf(Int32)
-            expect(toDbValue!.valueOf()).toEqual(NaN)
+        it('throws an exception when given non-number string values', () => {
+            expect(() => converter.toDb('this is not a number')).toThrow(Error)
         })
 
         it('should fail to convert null values', () => {
