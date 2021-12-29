@@ -34,7 +34,7 @@
         "url": "https://github.com/erikc5000/deco-mongo.git"
     },
     "engines": {
-        "node": ">= 10"
+        "node": ">= 12"
     },
     "devDependencies": {
         "@types/jest": "^27.0.3",
